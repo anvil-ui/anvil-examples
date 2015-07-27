@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">Anvil:Login</string>
+
+	<string name="login_label">Login:</string>
+	<string name="password_label">Password:</string>
+	<string name="login_placeholder">Your login</string>
+	<string name="password_placeholder">Your password</string>
+	<string name="login_button">Sign in</string>
+
+	<string name="error_label">Failed to sign in</string>
+
+	<string name="login_successful">You signed in successfully!</string>
+</resources>
