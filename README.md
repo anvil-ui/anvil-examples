@@ -38,7 +38,7 @@ This repository contains small examples of how Anvil can be used.
 	- how the same app would look with [Java 7][10], [Java 8][11] and [Kotlin][12]
 
 [1]: https://github.com/zserge/anvil/
-[2]: react
+[2]: http://facebook.github.io/react/
 [3]: http://mithril.js.org/
 [4]: https://github.com/zserge/anvil-examples/hello
 [5]: https://github.com/zserge/anvil-examples/counter
