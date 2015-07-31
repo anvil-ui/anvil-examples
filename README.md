@@ -41,12 +41,12 @@ This repository contains small examples of how Anvil can be used.
 [2]: http://facebook.github.io/react/
 [3]: http://mithril.js.org/
 
-[4]: ./hello
-[5]: ./counter
-[6]: ./login
-[7]: ./anim-picker
-[8]: ./currency
-[9]: ./countdone
-[10]: ./todo
-[11]: ./todo-java8
-[12]: ./todo-kotlin
+[4]: ./hello/
+[5]: ./counter/
+[6]: ./login/
+[7]: ./anim-picker/
+[8]: ./currency/
+[9]: ./countdone/
+[10]: ./todo/
+[11]: ./todo-java8/
+[12]: ./todo-kotlin/
