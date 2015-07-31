@@ -40,12 +40,13 @@ This repository contains small examples of how Anvil can be used.
 [1]: https://github.com/zserge/anvil/
 [2]: http://facebook.github.io/react/
 [3]: http://mithril.js.org/
-[4]: https://github.com/zserge/anvil-examples/hello
-[5]: https://github.com/zserge/anvil-examples/counter
-[6]: https://github.com/zserge/anvil-examples/login
-[7]: https://github.com/zserge/anvil-examples/anim-picker
-[8]: https://github.com/zserge/anvil-examples/currency
-[9]: https://github.com/zserge/anvil-examples/countdone
-[10]: https://github.com/zserge/anvil-examples/todo
-[11]: https://github.com/zserge/anvil-examples/todo-java8
-[12]: https://github.com/zserge/anvil-examples/todo-kotlin
+
+[4]: https://github.com/zserge/anvil-examples/tree/master/hello
+[5]: https://github.com/zserge/anvil-examples/tree/master/counter
+[6]: https://github.com/zserge/anvil-examples/tree/master/login
+[7]: https://github.com/zserge/anvil-examples/tree/master/anim-picker
+[8]: https://github.com/zserge/anvil-examples/tree/master/currency
+[9]: https://github.com/zserge/anvil-examples/tree/master/countdone
+[10]: https://github.com/zserge/anvil-examples/tree/master/todo
+[11]: https://github.com/zserge/anvil-examples/tree/master/todo-java8
+[12]: https://github.com/zserge/anvil-examples/tree/master/todo-kotlin
