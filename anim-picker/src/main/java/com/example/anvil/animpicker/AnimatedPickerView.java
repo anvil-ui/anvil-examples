@@ -56,6 +56,8 @@ public class AnimatedPickerView extends RenderableView {
 	private State mPrev = Anvil.newState(false);
 
 	private int mIndex = 0; // Current item index
+	private String[] mItems = { "Mercury", "Venus", "Earth", "Mars", "Jupiter",
+		"Saturn", "Uranus", "Neptune", "Pluto"};
 
 	// View width between next and prev buttons
 	// We can't tell it beforehand (it depends on the screen size and
@@ -71,15 +73,17 @@ public class AnimatedPickerView extends RenderableView {
 	// When next button is clicked - slowly change mNext state to true, then
 	// increase the item index, then set mNext back to false
 	private View.OnClickListener mOnNextClicked = (v) -> {
-		mNext.set(true, ANIM_DURATION, () -> mIndex++)
-			.set(false, 0);
+		mNext.set(true, ANIM_DURATION, () -> {
+			mIndex = (mIndex + 1) % mItems.length;
+		}).set(false, 0);
 	};
 
 	// When next button is clicked - slowly change mPrev state to true, then
 	// decrease the item index, then set mPrev back to false
 	private View.OnClickListener mOnPrevClicked = (v) -> {
-		mPrev.set(true, ANIM_DURATION, () -> mIndex--)
-			.set(false, 0);
+		mPrev.set(true, ANIM_DURATION, () -> {
+			mIndex = (mIndex + mItems.length - 1) % mItems.length;
+		}).set(false, 0);
 	};
 
 	public ViewNode view() {
@@ -153,9 +157,6 @@ public class AnimatedPickerView extends RenderableView {
 	// Let's separate rendering of the individual item from the generic picker
 	// component to make customizations easier
 	//
-
-	private String[] mItems = { "Mercury", "Venus", "Earth", "Mars", "Jupiter",
-		"Saturn", "Uranus", "Neptune", "Pluto"};
 	public ViewNode itemView(int index) {
 		// Get text of the item in the list (using modulo, non-negative index)
 		String item = mItems[(index + mItems.length) % mItems.length];
