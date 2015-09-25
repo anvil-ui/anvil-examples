@@ -40,8 +40,8 @@ import trikita.anvil.RenderableView;
 public class LoginView extends RenderableView {
 
 	// Current input: login and password strings
-	private String mLogin = "";
-	private String mPassword = "";
+	private StringBuilder mLogin = new StringBuilder("");
+	private StringBuilder mPassword = new StringBuilder("");
 
 	// Current flags: "has last login failed" and "is login in progress now"
 	private boolean mLoginFailed = false;
@@ -59,7 +59,7 @@ public class LoginView extends RenderableView {
 	// Click listener for the login button
 	private void onLoginClicked(View v) {
 		mIsLoggingIn = true;
-		performLogin(mLogin, mPassword);
+		performLogin(mLogin.toString(), mPassword.toString());
 	}
 
 	// This should really call API service and must not be part of the View class
@@ -86,48 +86,56 @@ public class LoginView extends RenderableView {
 
 	// Now we only define the form layout and bind all the methods and fields
 	// from the above.
-	public ViewNode view() {
-		return
-			v(LinearLayout.class,
-				size(FILL, WRAP),
-				padding(dip(16)),
-				orientation(LinearLayout.VERTICAL),
+	public void view() {
+		linearLayout(() -> {
+			size(FILL, WRAP);
+			padding(dip(16));
+			orientation(LinearLayout.VERTICAL);
 
-				// Login progress indicator, visible only when login is in progress
-				v(ProgressBar.class,
-					visibility(mIsLoggingIn)),
+			// Login progress indicator, visible only when login is in progress
+			progressBar(() -> {
+				visibility(mIsLoggingIn);
+			});
 
 				// Error message, visible only when login is in progress
-				v(TextView.class,
-					textColor(Color.RED),
-					text(R.string.error_label),
-					visibility(mLoginFailed)),
-				
-				v(TextView.class,
-					text(R.string.login_label)),
-				v(EditText.class,
-					size(FILL, WRAP),
-					hint(R.string.login_placeholder),
-					// Enabled when no login is in progress
-					enabled(!mIsLoggingIn),
-					// Update mLogin variablea as the user enters text
-					onTextChanged(s -> mLogin = s)),
+			textView(() -> {
+				textColor(Color.RED);
+				text(R.string.error_label);
+				visibility(mLoginFailed);
+			});
 
-				v(TextView.class,
-					text(R.string.password_label)),
-				v(EditText.class,
-					size(FILL, WRAP),
-					hint(R.string.password_placeholder),
-					// Enabled when no login is in progress
-					enabled(!mIsLoggingIn),
-					// Update mPassword variablea as the user enters text
-					onTextChanged(s -> mPassword = s)),
+			textView(() -> {
+				text(R.string.login_label);
+			});
 
-				v(Button.class,
-					size(FILL, WRAP),
-					text(R.string.login_button),
-					// Enabled when login is allowed and no current login is happening
-					enabled(isLoginAllowed() && !mIsLoggingIn),
-					onClick(this::onLoginClicked)));
+			editText(() -> {
+				size(FILL, WRAP);
+				hint(R.string.login_placeholder);
+				// Enabled when no login is in progress
+				enabled(!mIsLoggingIn);
+				// Update mLogin variablea as the user enters text
+				text(mLogin);
+			});
+
+			textView(() -> {
+				text(R.string.password_label);
+			});
+			editText(() -> {
+				size(FILL, WRAP);
+				hint(R.string.password_placeholder);
+				// Enabled when no login is in progress
+				enabled(!mIsLoggingIn);
+				// Update mPassword variablea as the user enters text
+				text(mPassword);
+			});
+
+			button(() -> {
+				size(FILL, WRAP);
+				text(R.string.login_button);
+				// Enabled when login is allowed and no current login is happening
+				enabled(isLoginAllowed() && !mIsLoggingIn);
+				onClick(this::onLoginClicked);
+			});
+		});
 	}
 }
