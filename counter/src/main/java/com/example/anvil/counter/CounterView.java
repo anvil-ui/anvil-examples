@@ -35,21 +35,20 @@ public class CounterView extends RenderableView {
 	// updated. For example, if mClicks value has been changed - 
 	// TextView's setText() will be called. Other attributes and views will
 	// remain untouched.
-	public ViewNode view() {
-		return
-			v(LinearLayout.class,
+	public void view() {
+		o (linearLayout(),
+			size(FILL, WRAP),
+			orientation(LinearLayout.VERTICAL),
+
+			o (textView(),
+				text("Clicks: " + mClicks)),
+
+			o (button(),
 				size(FILL, WRAP),
-				orientation(LinearLayout.VERTICAL),
-
-				v(TextView.class,
-					text("Clicks: " + mClicks)),
-
-				v(Button.class,
-					size(FILL, WRAP),
-					text("Click me"),
-					// Component rendering happens automatically in every standard
-					// listener binding, like onClick(), onTouch, onScroll etc.
-					onClick(mOnButtonClicked)));
+				text("Click me"),
+				// Component rendering happens automatically in every standard
+				// listener binding, like onClick(), onTouch, onScroll etc.
+				onClick(mOnButtonClicked)));
 	}
 }
 
