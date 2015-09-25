@@ -9,91 +9,87 @@ import android.widget.ListView
 import android.widget.TextView
 
 import trikita.anvil.RenderableView
+import trikita.anvil.RenderableArrayAdapter
 
 // Kotlin has a bug with importing static methods
 // so we have to import whole hierarchy of classes instead
-import trikita.anvil.Nodes.*
-import trikita.anvil.BaseAttrs.*
+import trikita.anvil.CommonAttrs.*
 import trikita.anvil.v15.Attrs.*
-import trikita.anvil.RenderableView
-import trikita.anvil.RenderableArrayAdapter
 
 class TodoView(c: Context) : RenderableView(c) {
-	var message = ""
-	var clearText = false
+	val message = StringBuilder("")
 
 	var todoAdapter = object : RenderableArrayAdapter<Todo.TodoItem>(Todo.items) {
-		public override fun itemView(pos: Int, value: Todo.TodoItem) = 
-			v<LinearLayout> {
-				- size(FILL, WRAP)
-				- minHeight(dip(72))
+		public override fun view(pos: Int, value: Todo.TodoItem) {
+			linearLayout {
+				size(FILL, WRAP)
+				minHeight(dip(72))
 
-				v<TextView> {
-					- size(0, WRAP).weight(1f).gravity(CENTER_VERTICAL)
-					- padding(dip(5))
-					- text(value.message)
+				textView {
+					size(0, WRAP)
+					weight(1f)
+					layoutGravity(CENTER_VERTICAL)
+					padding(dip(5))
+					text(value.message)
 				}
 
-				v<CheckBox> {
-					- size(WRAP, WRAP).margin(dip(5)).gravity(CENTER_VERTICAL)
-					- focusable(false)
-					- focusableInTouchMode(false)
-					- clickable(false)
-					- checked(value.checked)
+				checkBox {
+					size(WRAP, WRAP)
+					margin(dip(5))
+					layoutGravity(CENTER_VERTICAL)
+					focusable(false)
+					focusableInTouchMode(false)
+					clickable(false)
+					checked(value.checked)
 				}
 			}
+		}
 	}
 
-	public override fun view() =
-		v<LinearLayout> {
-			- size(FILL, WRAP)
-			- orientation(LinearLayout.VERTICAL)
+	public override fun view() {
+		linearLayout {
+			size(FILL, WRAP)
+			orientation(LinearLayout.VERTICAL)
 
-			v<LinearLayout> {
-				- size(FILL, WRAP)
+			linearLayout {
+				size(FILL, WRAP)
 
-				v<EditText> {
-					- size(0, WRAP).weight(1f)
-					if (clearText) {
-						- text("")
-					}
-					clearText = false
-					- onTextChanged { text ->
-						message = text
-					}
+				editText {
+					size(0, WRAP)
+					weight(1f)
+					text(message)
 				}
 
-				v<Button> {
-					- size(WRAP, WRAP).gravity(CENTER_VERTICAL)
-					- text("Add")
-					- enabled(message.trim().length() != 0)
-					- onClick {
-						Todo.add(message)
-						message = ""
-						clearText = true
+				button {
+					size(WRAP, WRAP)
+					layoutGravity(CENTER_VERTICAL)
+					text("Add")
+					enabled(message.toString().trim().length() != 0)
+					onClick {
+						Todo.add(message.toString())
+						message.delete(0, message.length())
 					}
 				}
 			}
 
-			v<Button> {
-				- size(FILL, WRAP)
-				- padding(dip(5))
-				- text("Clear checked tasks")
-				- enabled(Todo.hasChecked())
-				- onClick {
+			button {
+				size(FILL, WRAP)
+				padding(dip(5))
+				text("Clear checked tasks")
+				enabled(Todo.hasChecked())
+				onClick {
 					Todo.clear()
 				}
 			}
-			v<ListView> {
-				- size(FILL, WRAP)
-				- itemsCanFocus(true)
-				- onItemClick { parent, view, pos, id ->
+
+			listView {
+				size(FILL, WRAP)
+				itemsCanFocus(true)
+				onItemClick { parent, view, pos, id ->
 					Todo.toggle(pos)
 				}
-				- adapter(todoAdapter)
-				todoAdapter.notifyDataSetChanged()
+				adapter(todoAdapter)
 			}
 		}
+	}
 }
-
-
