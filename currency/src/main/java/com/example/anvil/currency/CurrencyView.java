@@ -1,21 +1,23 @@
 package com.example.anvil.currency;
 
 import android.content.Context;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static trikita.anvil.v15.Attrs.*;
 
 import trikita.anvil.Anvil;
 import trikita.anvil.RenderableAdapter;
-import trikita.anvil.SimpleAttrNode;
 import trikita.anvil.RenderableView;
-import android.view.View;
-import android.widget.TextView;
-import java.util.Map;
-import java.util.HashMap;
 
 public class CurrencyView extends RenderableView {
 
@@ -26,6 +28,9 @@ public class CurrencyView extends RenderableView {
 
 	private Mutable<Float> mFirstSum = new Mutable<>(100.0f);
 	private Mutable<Float> mSecondSum = new Mutable<>(0.f);
+
+	private TextWatcher mFirstWatcher = bindValue(mFirstSum);
+	private TextWatcher mSecondWatcher = bindValue(mSecondSum);
 
 	private RenderableAdapter mCurrencyAdapter = new RenderableAdapter() {
 		public int getCount() {
@@ -40,12 +45,12 @@ public class CurrencyView extends RenderableView {
 			}
 			return mCurrencyManager.currencies().get(index);
 		}
-		public ViewNode itemView(int index) {
-			return
-				v(TextView.class,
-					size(FILL, dip(48)),
-					gravity(CENTER),
-					text(getItem(index)));
+		public void view(int index) {
+			textView(() -> {
+				size(FILL, dip(48));
+				gravity(CENTER);
+				text(getItem(index));
+			});
 		}
 	};
 
@@ -74,68 +79,11 @@ public class CurrencyView extends RenderableView {
 		}
 	}
 
-	public ViewNode view() {
-		setupAdapters();
-		return
-			v(LinearLayout.class,
-				size(FILL, FILL),
-				orientation(LinearLayout.VERTICAL),
-				
-				v(LinearLayout.class,
-					size(FILL, WRAP),
-					
-					v(Spinner.class,
-						size(WRAP, WRAP).weight(1f),
-						spinnerStyle(),
-						selection(mFirstIndex.get()),
-						onItemSelected((av, v, i, id) -> {
-							mFirstIndex.set(i);
-							update(mFirstSum);
-						}),
-						adapter(mCurrencyAdapter)),
-					
-					v(EditText.class,
-						size(WRAP, WRAP).weight(1.6f),
-						inputStyle(),
-						bindValue(mFirstSum))),
-
-				v(LinearLayout.class,
-					size(FILL, WRAP),
-					
-					v(Spinner.class,
-						size(WRAP, WRAP).weight(1),
-						spinnerStyle(),
-						selection(mSecondIndex.get()),
-						onItemSelected((av, v, i, id) -> {
-							mSecondIndex.set(i);
-							update(mSecondSum);
-						}),
-						adapter(mCurrencyAdapter)),
-					
-					v(EditText.class,
-						size(WRAP, WRAP).weight(1.6f),
-						inputStyle(),
-						bindValue(mSecondSum))));
-	}
-
-	private AttrNode spinnerStyle() {
-		return null;
-	}
-
-	private AttrNode inputStyle() {
-		return attrs(
-				inputType(InputType.TYPE_CLASS_NUMBER |
-					InputType.TYPE_NUMBER_FLAG_DECIMAL),
-				null);
-	}
-
-	private AttrNode bindValue(Mutable<Float> value) {
-		return attrs(
-			selectAllOnFocus(true),
-			!value.isModifiedByUser() ? text(value.get(true).toString()) : null,
-			onTextChanged(s -> {
+	private TextWatcher bindValue(final Mutable<Float> value) {
+		return new TextWatcher() {
+			public void afterTextChanged(Editable s) {
 				try {
-					float n = Float.valueOf(s);
+					float n = Float.valueOf(s.toString());
 					if (n != value.get()) {
 						value.set(n, true);
 						update(value);
@@ -144,7 +92,10 @@ public class CurrencyView extends RenderableView {
 					value.set(0f, true);
 					update(value);
 				}
-			}));
+			}
+			public void	beforeTextChanged(CharSequence s, int from, int n, int after) {}
+			public void	onTextChanged(CharSequence s, int from, int before, int n) {}
+		};
 	}
 
 	private void update(Mutable<Float> value) {
@@ -156,6 +107,71 @@ public class CurrencyView extends RenderableView {
 				exchange(mSecondIndex.get(), mFirstIndex.get(), value.get()));
 		}
 		Anvil.render();
+	}
+
+	public void view() {
+		setupAdapters();
+
+		linearLayout(() -> {
+			size(FILL, FILL);
+			orientation(LinearLayout.VERTICAL);
+
+			linearLayout(() -> {
+				size(FILL, WRAP);
+
+				spinner(() -> {
+					spinnerStyle();
+					selection(mFirstIndex.get());
+					onItemSelected((av, v, i, id) -> {
+						mFirstIndex.set(i);
+						update(mFirstSum);
+					});
+					adapter(mCurrencyAdapter);
+				});
+
+				editText(() -> {
+					inputStyle();
+					onTextChanged(mFirstWatcher);
+					if (mFirstSum.isModifiedByUser() == false) {
+						text(mFirstSum.get(true).toString());
+					}
+				});
+			});
+
+			linearLayout(() -> {
+				size(FILL, WRAP);
+
+				spinner(() -> {
+					spinnerStyle();
+					selection(mSecondIndex.get());
+					onItemSelected((av, v, i, id) -> {
+						mSecondIndex.set(i);
+						update(mSecondSum);
+					});
+					adapter(mCurrencyAdapter);
+				});
+
+				editText(() -> {
+					inputStyle();
+					onTextChanged(mSecondWatcher);
+					if (mSecondSum.isModifiedByUser() == false) {
+						text(mSecondSum.get(true).toString());
+					}
+				});
+			});
+		});
+	}
+
+	private void spinnerStyle() {
+		size(0, FILL);
+		weight(0.4f);
+	}
+
+	private void inputStyle() {
+		size(0, FILL);
+		weight(0.6f);
+		inputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+		selectAllOnFocus(true);
 	}
 }
 
