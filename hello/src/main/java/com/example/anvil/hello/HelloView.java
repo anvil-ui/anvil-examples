@@ -39,14 +39,13 @@ public class HelloView extends RenderableView {
 	//      android:test="@string/hello" />
 	// </FrameLayout>
 	//
-	public ViewNode view() {
-		return
-			v(FrameLayout.class,
-				size(FILL, FILL),
+	public void view() {
+		o (frameLayout(),
+			size(FILL, FILL),
 
-				v(TextView.class,
-					size(WRAP, WRAP)
-						.gravity(CENTER),
-					text(R.string.hello)));
+			o (textView(),
+				size(WRAP, WRAP),
+				layoutGravity(CENTER),
+				text(R.string.hello)));
 	}
 }
