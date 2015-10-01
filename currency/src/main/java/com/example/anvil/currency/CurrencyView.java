@@ -13,7 +13,7 @@ import android.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
 
-import static trikita.anvil.v15.Attrs.*;
+import static trikita.anvil.DSL.*;
 
 import trikita.anvil.Anvil;
 import trikita.anvil.RenderableAdapter;

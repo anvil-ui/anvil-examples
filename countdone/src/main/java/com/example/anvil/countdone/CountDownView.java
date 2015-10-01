@@ -11,10 +11,9 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import static trikita.anvil.v10.Attrs.*;
+import static trikita.anvil.DSL.*;
 
 import trikita.anvil.Anvil;
-import trikita.anvil.Backstack;
 import trikita.anvil.RenderableView;
 
 //
@@ -36,7 +35,7 @@ public class CountDownView extends RenderableView {
 	// Infinite periodic timer to update UI every second
 	private CountDownTimer mTimer = new CountDownTimer(24*60*60*1000, 1000) {
 		public void onTick(long millis) {
-			Anvil.render(CountDownView.this);
+			Anvil.render();
 		}
 		public void onFinish() {
 			// restart timer once it's finished to make it infinite
@@ -44,41 +43,33 @@ public class CountDownView extends RenderableView {
 		}
 	};
 
-	private View.OnClickListener mStartClicked = new View.OnClickListener() {
-		public void onClick(View v) {
-			// TODO: this should be declarative using a TextWatcher
-			String s = ((EditText) findViewById(TASK_NAME_EDITTEXT_ID)).getText().toString();
-			mCurrentTask.setName(s);
-			mCurrentTask.start();
-		}
+	private View.OnClickListener mStartClicked = (v) -> {
+		// TODO: this should be declarative using a TextWatcher
+		String s = ((EditText) findViewById(TASK_NAME_EDITTEXT_ID)).getText().toString();
+		mCurrentTask.setName(s);
+		mCurrentTask.start();
 	};
 
-	private View.OnClickListener mRestartClicked = new View.OnClickListener() {
-		public void onClick(View v) {
-			Tasks.Task task = mTasks.create(mCurrentTask.getName(), mCurrentTask.getDuration());
-			mCurrentTask = task;
-			mCurrentTask.start();
-		}
+	private View.OnClickListener mRestartClicked = (v) -> {
+		Tasks.Task task = mTasks.create(mCurrentTask.getName(), mCurrentTask.getDuration());
+		mCurrentTask = task;
+		mCurrentTask.start();
 	};
 
-	private View.OnClickListener mDoneClicked = new View.OnClickListener() {
-		public void onClick(View v) {
-			mCurrentTask.stop();
-			finish();
-		}
+	private View.OnClickListener mDoneClicked = (v) -> {
+		mCurrentTask.stop();
+		finish();
 	};
 
-	private View.OnClickListener mTimeClicked = new View.OnClickListener() {
-		public void onClick(View v) {
-			TimePickerDialog picker = new TimePickerDialog(v.getContext(), (p, hour, minute) -> {
-				mCurrentTask.setDuration((hour * 60 + minute ) * 60 * 1000);
-				mTimeIsSet = true;
-				Anvil.render(CountDownView.this);
-			}, (int) mCurrentTask.getRemainder()/60/60/1000,
-			(int) (mCurrentTask.getRemainder()/60/1000)%60, true);
-			picker.setTitle(R.string.set_time_title);
-			picker.show();
-		}
+	private View.OnClickListener mTimeClicked = (v) -> {
+		TimePickerDialog picker = new TimePickerDialog(v.getContext(), (p, hour, minute) -> {
+			mCurrentTask.setDuration((hour * 60 + minute ) * 60 * 1000);
+			mTimeIsSet = true;
+			Anvil.render();
+		}, (int) mCurrentTask.getRemainder()/60/60/1000,
+		(int) (mCurrentTask.getRemainder()/60/1000)%60, true);
+		picker.setTitle(R.string.set_time_title);
+		picker.show();
 	};
 
 	public CountDownView(Context c) {
@@ -104,6 +95,7 @@ public class CountDownView extends RenderableView {
 
 	@Override
 	public void onAttachedToWindow() {
+		super.onAttachedToWindow();
 		post(() -> {
 			// Put cursor at the end of the edit text
 			EditText editText = (EditText) findViewById(TASK_NAME_EDITTEXT_ID);
@@ -114,6 +106,7 @@ public class CountDownView extends RenderableView {
 
 	@Override
 	public void onDetachedFromWindow() {
+		super.onDetachedFromWindow();
 		if (mCurrentTask.isRunning()) {
 			mCurrentTask.pause();
 		}
@@ -134,106 +127,126 @@ public class CountDownView extends RenderableView {
 				(t/1000)%60);
 	}
 
-	private AttrNode materialIcon(String s) {
-		return
-			attrs(size(dip(48), dip(48)).weight(0),
-					gravity(CENTER),
-					textColor(Color.WHITE),
-					clickable(true),
-					typeface("Material-Design-Icons.ttf"),
-					textSize(36),
-					backgroundResource(R.drawable.header_button),
-					text(s));
+	private void materialIcon(String s) {
+		size(dip(48), dip(48));
+		weight(0);
+		gravity(CENTER);
+		textColor(Color.WHITE);
+		clickable(true);
+		typeface("Material-Design-Icons.ttf");
+		textSize(36);
+		backgroundResource(R.drawable.header_button);
+		text(s);
 	}
 
 	@Override
-	public ViewNode view() {
-		return
-			v(LinearLayout.class,
-					orientation(LinearLayout.VERTICAL),
-					backgroundColor(BACKGROUND_COLOR),
+	public void view() {
+		linearLayout(() -> {
+			size(FILL, FILL);
+			orientation(LinearLayout.VERTICAL);
+			backgroundColor(BACKGROUND_COLOR);
 
-					v(LinearLayout.class,
-						orientation(LinearLayout.HORIZONTAL),
-						size(FILL, WRAP).gravity(CENTER_HORIZONTAL|TOP),
-						padding(dip(4)),
+			linearLayout(() -> {
+				size(FILL, WRAP);
+				orientation(LinearLayout.HORIZONTAL);
+				layoutGravity(CENTER_HORIZONTAL|TOP);
+				padding(dip(4));
 
-						v(TextView.class,
-							materialIcon("\ue893"), //Back
-							onClick((v) -> finish())),
+				textView(() -> {
+					materialIcon("\ue893"); //Back
+					onClick((v) -> finish());
+				});
 
-						v(View.class, size(WRAP, FILL).weight(1),
-							gravity(CENTER_VERTICAL)),
+				v(View.class, () -> {
+					size(WRAP, FILL);
+					weight(1);
+					gravity(CENTER_VERTICAL);
+				});
 
-						v(TextView.class,
-							materialIcon("\ue796"), // Edit
-							visibility(mCurrentTask.isRunning() ? View.VISIBLE : View.GONE),
-							onClick((v) -> {
-								mCurrentTask.pause();
-								post(() -> {
-									EditText editText = (EditText) findViewById(TASK_NAME_EDITTEXT_ID);
-									editText.requestFocus();
-								});
-							})),
+				textView(() -> {
+					materialIcon("\ue796"); // Edit
+					visibility(mCurrentTask.isRunning());
+					onClick((v) -> {
+						mCurrentTask.pause();
+						post(() -> {
+							EditText editText = (EditText) findViewById(TASK_NAME_EDITTEXT_ID);
+							editText.requestFocus();
+						});
+					});
+				});
 
-						v(TextView.class,
-							materialIcon("\ue620"), // Remove
-							visibility(mCurrentTask.isFinished() ? View.VISIBLE : View.GONE),
-							onClick((v) -> {
-								mCurrentTask.remove();
-								finish();
-							}))),
+				textView(() -> {
+					materialIcon("\ue620"); // Remove
+					visibility(mCurrentTask.isFinished());
+					onClick((v) -> {
+						mCurrentTask.remove();
+						finish();
+					});
+				});
+			});
 
-					v(FrameLayout.class,
-							size(FILL, WRAP).weight(1),
+			frameLayout(() -> {
+				size(FILL, WRAP);
+				weight(1);
 
-						v(LinearLayout.class,
-							orientation(LinearLayout.VERTICAL),
-							size(FILL, WRAP).gravity(CENTER_HORIZONTAL|BOTTOM),
+				linearLayout(() -> {
+					orientation(LinearLayout.VERTICAL);
+					size(FILL, WRAP);
+					layoutGravity(CENTER_HORIZONTAL|BOTTOM);
 
-							v(EditText.class,
-								id(TASK_NAME_EDITTEXT_ID),
-								size(FILL, WRAP),
-								gravity(CENTER),
-								textColor(Color.WHITE),
-								textSize(isPortrait() ? 42 : 36),
-								singleLine(true),
-								focusable(mCurrentTask.isNew() || mCurrentTask.isPaused()),
-								focusableInTouchMode(mCurrentTask.isNew() || mCurrentTask.isPaused()),
-								clickable(mCurrentTask.isNew() || mCurrentTask.isPaused()),
-								cursorVisible(mCurrentTask.isNew() || mCurrentTask.isPaused()),
-								backgroundDrawable(null),
-								typeface("RobotoCondensed-Light.ttf"),
-								hint(R.string.task_name_hint),
-								text(mCurrentTask.getName())),
+					editText(() -> {
+						id(TASK_NAME_EDITTEXT_ID);
+						size(FILL, WRAP);
+						gravity(CENTER);
+						textColor(Color.WHITE);
+						textSize(isPortrait() ? 42 : 36);
+						singleLine(true);
+						focusable(mCurrentTask.isNew() || mCurrentTask.isPaused());
+						focusableInTouchMode(mCurrentTask.isNew() || mCurrentTask.isPaused());
+						clickable(mCurrentTask.isNew() || mCurrentTask.isPaused());
+						cursorVisible(mCurrentTask.isNew() || mCurrentTask.isPaused());
+						backgroundDrawable(null);
+						typeface("RobotoCondensed-Light.ttf");
+						hint(R.string.task_name_hint);
+						text(mCurrentTask.getName());
+					});
 
-							v(TextView.class,
-								size(FILL, WRAP),
-								gravity(CENTER),
-								textColor(Color.WHITE),
-								textSize(isPortrait() ? 67 : 42),
-								clickable(mCurrentTask.isNew() || mCurrentTask.isPaused()),
-								onClick(mTimeClicked),
-								typeface("RobotoCondensed-Bold.ttf"),
-								text(getCountDownText())))),
+					textView(() -> {
+						size(FILL, WRAP);
+						gravity(CENTER);
+						textColor(Color.WHITE);
+						textSize(isPortrait() ? 67 : 42);
+						clickable(mCurrentTask.isNew() || mCurrentTask.isPaused());
+						onClick(mTimeClicked);
+						typeface("RobotoCondensed-Bold.ttf");
+						text(getCountDownText());
+					});
+				});
+			});
 
+			frameLayout(() -> {
+				size(FILL, WRAP);
+				layoutGravity(CENTER);
+				weight(1);
 
-					v(FrameLayout.class,
-						size(FILL, WRAP).gravity(CENTER).weight(1),
-
-						v(TextView.class,
-							size(dip(StartView.BUTTON_SIZE), dip(StartView.BUTTON_SIZE)).gravity(CENTER).weight(1),
-							gravity(CENTER),
-							clickable(true),
-							backgroundResource(R.drawable.black_button),
-							textColor(Color.WHITE),
-							textSize(24),
-							enabled(!mCurrentTask.isNew() || mTimeIsSet),
-							typeface("RobotoCondensed-Light.ttf"),
-							onClick(mCurrentTask.isRunning() ? mDoneClicked :
-								(mCurrentTask.isFinished() ? mRestartClicked : mStartClicked)),
-							text(mCurrentTask.isNew() || mCurrentTask.isPaused() ? 
-								R.string.start : (mCurrentTask.isFinished() ? R.string.again : R.string.done )))));
+				textView(() -> {
+					size(dip(StartView.BUTTON_SIZE), dip(StartView.BUTTON_SIZE));
+					layoutGravity(CENTER);
+					weight(1);
+					gravity(CENTER);
+					clickable(true);
+					backgroundResource(R.drawable.black_button);
+					textColor(Color.WHITE);
+					textSize(24);
+					enabled(!mCurrentTask.isNew() || mTimeIsSet);
+					typeface("RobotoCondensed-Light.ttf");
+					onClick(mCurrentTask.isRunning() ? mDoneClicked :
+						(mCurrentTask.isFinished() ? mRestartClicked : mStartClicked));
+					text(mCurrentTask.isNew() || mCurrentTask.isPaused() ? 
+						R.string.start : (mCurrentTask.isFinished() ? R.string.again : R.string.done));
+				});
+			});
+		});
 	}
 
 	public void onLoad(Bundle b) {

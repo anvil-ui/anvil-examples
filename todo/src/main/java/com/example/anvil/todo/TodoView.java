@@ -10,10 +10,9 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import static trikita.anvil.v15.Attrs.*;
+import static trikita.anvil.DSL.*;
 
 import trikita.anvil.RenderableAdapter;
-import trikita.anvil.RenderableArrayAdapter;
 import trikita.anvil.RenderableView;
 
 public class TodoView extends RenderableView {
@@ -44,29 +43,30 @@ public class TodoView extends RenderableView {
 		}
 	};
 
-	RenderableAdapter mTodoAdapter = new RenderableArrayAdapter<Todo.TodoItem>(todo.items()) {
-		public void view(int pos, Todo.TodoItem value) {
-			o (linearLayout(),
-				size(FILL, WRAP),
-				minHeight(dip(72)),
+	RenderableAdapter mTodoAdapter = RenderableAdapter.withItems(todo.items(),
+			new RenderableAdapter.Item<Todo.TodoItem>() {
+				public void view(int pos, Todo.TodoItem value) {
+					o (linearLayout(),
+						size(FILL, WRAP),
+						minHeight(dip(72)),
 
-				o (textView(),
-					size(0, WRAP),
-					weight(1),
-					layoutGravity(CENTER_VERTICAL),
-					padding(dip(5)),
-					text(value.getMessage())),
+						o (textView(),
+							size(0, WRAP),
+							weight(1),
+							layoutGravity(CENTER_VERTICAL),
+							padding(dip(5)),
+							text(value.getMessage())),
 
-				o (checkBox(),
-					size(WRAP, WRAP),
-					margin(dip(5)),
-					layoutGravity(CENTER_VERTICAL),
-					focusable(false),
-					focusableInTouchMode(false),
-					clickable(false),
-					checked(value.isChecked())));
-		}
-	};
+						o (checkBox(),
+							size(WRAP, WRAP),
+							margin(dip(5)),
+							layoutGravity(CENTER_VERTICAL),
+							focusable(false),
+							focusableInTouchMode(false),
+							clickable(false),
+							checked(value.isChecked())));
+				}
+			});
 
 	public void view() {
 		o (linearLayout(),

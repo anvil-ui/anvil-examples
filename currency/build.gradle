@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-	compile 'co.trikita:anvil:+'
+	compile 'co.trikita:anvil-sdk15:+'
 	compile 'com.squareup.okhttp:okhttp:+'
 	compile 'com.google.code.gson:gson:+'
 }

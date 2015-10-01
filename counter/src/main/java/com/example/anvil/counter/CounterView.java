@@ -1,13 +1,14 @@
 package com.example.anvil.counter;
 
+import android.content.Context;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.view.View;
-
-import static trikita.anvil.v15.Attrs.*;
-import trikita.anvil.RenderableView;
-import android.content.Context;
 import android.widget.TextView;
+
+import static trikita.anvil.DSL.*;
+
+import trikita.anvil.RenderableView;
 
 // Counter component contains a text and a button.
 // Text displays how many times the button was clicked.

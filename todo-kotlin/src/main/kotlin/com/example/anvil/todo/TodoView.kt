@@ -1,47 +1,40 @@
 package com.example.anvil.todo
 
 import android.content.Context
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.TextView
 
 import trikita.anvil.RenderableView
-import trikita.anvil.RenderableArrayAdapter
+import trikita.anvil.RenderableAdapter
 
 // Kotlin has a bug with importing static methods
 // so we have to import whole hierarchy of classes instead
-import trikita.anvil.CommonAttrs.*
-import trikita.anvil.v15.Attrs.*
+import trikita.anvil.BaseDSL.*
+import trikita.anvil.DSL.*
 
 class TodoView(c: Context) : RenderableView(c) {
 	val message = StringBuilder("")
 
-	var todoAdapter = object : RenderableArrayAdapter<Todo.TodoItem>(Todo.items) {
-		public override fun view(pos: Int, value: Todo.TodoItem) {
-			linearLayout {
-				size(FILL, WRAP)
-				minHeight(dip(72))
+	var todoAdapter = RenderableAdapter.withItems(Todo.items) { pos, value ->
+		linearLayout {
+			size(FILL, WRAP)
+			minHeight(dip(72))
 
-				textView {
-					size(0, WRAP)
-					weight(1f)
-					layoutGravity(CENTER_VERTICAL)
-					padding(dip(5))
-					text(value.message)
-				}
+			textView {
+				size(0, WRAP)
+				weight(1f)
+				layoutGravity(CENTER_VERTICAL)
+				padding(dip(5))
+				text(value.message)
+			}
 
-				checkBox {
-					size(WRAP, WRAP)
-					margin(dip(5))
-					layoutGravity(CENTER_VERTICAL)
-					focusable(false)
-					focusableInTouchMode(false)
-					clickable(false)
-					checked(value.checked)
-				}
+			checkBox {
+				size(WRAP, WRAP)
+				margin(dip(5))
+				layoutGravity(CENTER_VERTICAL)
+				focusable(false)
+				focusableInTouchMode(false)
+				clickable(false)
+				checked(value.checked)
 			}
 		}
 	}

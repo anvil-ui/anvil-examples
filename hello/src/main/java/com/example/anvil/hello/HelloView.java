@@ -4,8 +4,8 @@ import android.content.Context;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-// Attrs is a mixin for all View bindings for the given API level
-import static trikita.anvil.v15.Attrs.*;
+// DSL is a mixin for all View bindings for the given API level
+import static trikita.anvil.DSL.*;
 
 // RenderableView is a reactive Anvil component
 import trikita.anvil.RenderableView;

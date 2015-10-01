@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 
-import trikita.anvil.Backstack;
-
 public class MainActivity extends Activity {
 
 	private Backstack mBackstack = new Backstack(this, new Backstack.Listener() {

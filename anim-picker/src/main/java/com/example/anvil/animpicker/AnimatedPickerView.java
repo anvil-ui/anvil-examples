@@ -8,7 +8,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import static trikita.anvil.v15.Attrs.*;
+import static trikita.anvil.DSL.*;
 
 import trikita.anvil.Anvil;
 import trikita.anvil.RenderableView;
@@ -115,8 +115,6 @@ public class AnimatedPickerView extends RenderableView {
 						Anvil.currentView().post(() -> Anvil.render());
 					}
 				}
-
-				System.out.println("ANIM NEXT="+mState.get());
 
 				// Primary view, displays the current item
 				frameLayout(() -> {

@@ -14,9 +14,8 @@ import android.widget.TextView;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import static trikita.anvil.v15.Attrs.*;
+import static trikita.anvil.DSL.*;
 
-import trikita.anvil.Backstack;
 import trikita.anvil.RenderableAdapter;
 import trikita.anvil.RenderableView;
 
@@ -41,14 +40,15 @@ public class StartView extends RenderableView {
 	
 	private AbsListView.OnScrollListener mScrollListener = new AbsListView.OnScrollListener() {
 		public void onScroll(AbsListView v, int first, int count, int total) {
-			int top = 0;
-			if (v.getChildCount() > 0) {
-				top = -v.getChildAt(0).getTop() + first * v.getChildAt(0).getHeight();
-				if (top >= 0) {
-					mTopViewHeight = Math.max((int) (MAX_TOP_HEIGHT -
-								top/(getResources().getDisplayMetrics().density)/1.5f), MIN_TOP_HEIGHT);
-				}
-			}
+			//int top = 0;
+			//if (v.getChildCount() > 0) {
+				//top = -v.getChildAt(0).getTop() + first * v.getChildAt(0).getHeight();
+				//if (top >= 0) {
+					//mTopViewHeight = Math.max((int) (MAX_TOP_HEIGHT -
+								//top/(getResources().getDisplayMetrics().density)/1.5f), MIN_TOP_HEIGHT);
+					//System.out.println("mTopViewHeight = " + mTopViewHeight);
+				//}
+			//}
 		}
 		public void onScrollStateChanged(AbsListView v, int state) {}
 	};
@@ -65,68 +65,87 @@ public class StartView extends RenderableView {
 	}
 
 	@Override
-	public ViewNode view() {
-		return isPortrait() ? portraitView() : landscapeView();
+	public void view() {
+		if (isPortrait()) {
+			portraitView();
+		} else {
+			landscapeView();
+		}
 	}
 
-	private ViewNode landscapeView() {
-		return
-			v(LinearLayout.class,
-					size(FILL, FILL),
-					backgroundColor(BACKGROUND_COLOR),
+	private void landscapeView() {
+		linearLayout(() -> {
+			size(FILL, FILL);
+			backgroundColor(BACKGROUND_COLOR);
 
-					v(FrameLayout.class,
-						size(FILL, FILL).weight(1),
-						blackButton()),
-
-					listView(false));
+			frameLayout(() -> {
+				size(0, FILL);
+				weight(0.5f);
+				blackButton();
+			});
+			list(false);
+		});
 	}
 
-	private ViewNode portraitView() {
-		return
-			v(FrameLayout.class,
-					size(FILL, FILL),
-					backgroundColor(BACKGROUND_COLOR),
+	private void portraitView() {
+		frameLayout(() -> {
+			size(FILL, FILL);
+			backgroundColor(BACKGROUND_COLOR);
 
-					listView(true),
+			list(true);
 
-					v(FrameLayout.class,
-						size(FILL, dip(mTopViewHeight)),
-						blackButton()),
+			frameLayout(() -> {
+				size(FILL, dip(mTopViewHeight));
+				blackButton();
+			});
 
-					 v(View.class,
-						 size(FILL, dip(2)).margin(0, dip(mTopViewHeight), 0, 0),
-						 visibility(mTopViewHeight < MAX_TOP_HEIGHT ? View.VISIBLE : View.GONE),
-						 backgroundColor(0x20000000)));
+			v(View.class, () -> {
+				size(FILL, dip(2));
+				margin(0, dip(mTopViewHeight), 0, 0);
+				visibility(mTopViewHeight < MAX_TOP_HEIGHT ? View.VISIBLE : View.GONE);
+				backgroundColor(0x20000000);
+			});
+		});
 	}
 
-	private ViewNode blackButton() {
-		return
-			v(TextView.class,
-					size(dip(BUTTON_SIZE), dip(BUTTON_SIZE)).gravity(CENTER),
-					clickable(true),
-					gravity(CENTER),
-					backgroundResource(R.drawable.black_button),
-					textColor(Color.WHITE),
-					textSize(24),
-					typeface("RobotoCondensed-Light.ttf"),
-					onClick(mOnOpenCountDownView),
-					text(Tasks.getInstance().getCurrent() == null ? R.string.create : R.string.resume));
+	private void blackButton() {
+		textView(() -> {
+			size(dip(BUTTON_SIZE), dip(BUTTON_SIZE));
+			layoutGravity(CENTER);
+			clickable(true);
+			gravity(CENTER);
+			backgroundResource(R.drawable.black_button);
+			textColor(Color.WHITE);
+			textSize(24);
+			typeface("RobotoCondensed-Light.ttf");
+			onClick(mOnOpenCountDownView);
+			text(Tasks.getInstance().getCurrent() == null ? R.string.create : R.string.resume);
+		});
 	}
 
-	private ViewNode listView(boolean withMargin) {
-		return 
-			v(ListView.class,
-					size(FILL, FILL).margin(0, (withMargin ? dip(mTopViewHeight) : 0), 0, 0).weight(1),
-					adapter((ListAdapter) mTasksAdapter),
-					divider(null),
-					overScrollMode(ScrollView.OVER_SCROLL_NEVER),
-					onItemClick((adapterView, v, pos, id) -> {
-						Tasks.Task task = (Tasks.Task) mTasksAdapter.getItem(pos);
-						// make it a current task
-						mBackstack.navigate(new CountDownView(getContext()).withTask(task));
-					}),
-					onScroll(mScrollListener));
+	private void list(boolean withParallax) {
+		listView(() -> {
+			backgroundColor(Color.RED);
+			adapter(mTasksAdapter);
+			divider(null);
+			overScrollMode(ScrollView.OVER_SCROLL_NEVER);
+			if (withParallax) {
+				size(FILL, FILL);
+				margin(dip(12));
+				onScroll(mScrollListener);
+				//top(mTopViewHeight);
+				//translationY(dip(mTopViewHeight));
+				//margin(0, dip(mTopViewHeight), 0, 0);
+			} else {
+				size(0, FILL);
+				weight(0.5f);
+			}
+			onItemClick((adapterView, v, pos, id) -> {
+				Tasks.Task task = (Tasks.Task) mTasksAdapter.getItem(pos);
+				// make it a current task
+				mBackstack.navigate(new CountDownView(getContext()).withTask(task));
+			});
+		});
 	}
 
 	//
@@ -164,12 +183,13 @@ public class StartView extends RenderableView {
 		}
 
 		@Override
-		public ViewNode itemView(int pos) {
+		public void view(int pos) {
 			Tasks.Task task = getItem(pos);
 			boolean isHeader = (task == null);
 			String itemText;
-			String itemDate = "";
+			final String itemDate;
 			if (task == null) {
+				itemDate = "";
 				if (pos == 0) {
 					itemText = getContext().getString(R.string.list_group_completed);
 				} else {
@@ -191,26 +211,32 @@ public class StartView extends RenderableView {
 					itemDate = new SimpleDateFormat("HH:mm").format(calendar.getTime());
 				}
 			}
+			button(() -> {});
+			//linearLayout(() -> {
+				//size(FILL, WRAP);
 
-			return
-				v(LinearLayout.class,
-						size(FILL, WRAP),
-						v(TextView.class,
-							size(WRAP, dip(48)).weight(1),
-							gravity(CENTER_VERTICAL),
-							typeface("RobotoCondensed-Bold.ttf"),
-							padding(dip(8)),
-							textSize(24),
-							textColor(task == null ? Color.WHITE: 0x90ffffff),
-							text(itemText)),
-						v(TextView.class,
-							size(WRAP, dip(48)).weight(0),
-							gravity(CENTER_VERTICAL),
-							typeface("RobotoCondensed-Bold.ttf"),
-							padding(dip(8)),
-							textSize(24),
-							textColor(Color.WHITE),
-							text(itemDate)));
+				//textView(() -> {
+					//size(WRAP, dip(48));
+					//weight(1);
+					//gravity(CENTER_VERTICAL);
+					//typeface("RobotoCondensed-Bold.ttf");
+					//padding(dip(8));
+					//textSize(24);
+					//textColor(task == null ? Color.WHITE: 0x90ffffff);
+					//text(itemText);
+				//});
+
+				//textView(() -> {
+					//size(WRAP, dip(48));
+					//weight(0);
+					//gravity(CENTER_VERTICAL);
+					//typeface("RobotoCondensed-Bold.ttf");
+					//padding(dip(8));
+					//textSize(24);
+					//textColor(Color.WHITE);
+					//text(itemDate);
+				//});
+			//});
 		}
 	};
 }

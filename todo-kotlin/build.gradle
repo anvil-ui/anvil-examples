@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
 	compile 'org.jetbrains.kotlin:kotlin-stdlib:+'
-	compile 'co.trikita:anvil:+'
+	compile 'co.trikita:anvil-sdk15:+'
 }
 
 android {

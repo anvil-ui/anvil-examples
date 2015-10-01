@@ -10,7 +10,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import static trikita.anvil.v15.Attrs.*;
+import static trikita.anvil.DSL.*;
 
 import trikita.anvil.Anvil;
 import trikita.anvil.RenderableView;

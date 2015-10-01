@@ -9,11 +9,10 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import static trikita.anvil.v15.Attrs.*;
+import static trikita.anvil.DSL.*;
 
 import trikita.anvil.Anvil;
 import trikita.anvil.RenderableAdapter;
-import trikita.anvil.RenderableArrayAdapter;
 import trikita.anvil.RenderableView;
 
 public class TodoView extends RenderableView {
@@ -31,8 +30,7 @@ public class TodoView extends RenderableView {
 	}
 
 	RenderableAdapter mTodoAdapter =
-			new RenderableArrayAdapter<Todo.TodoItem>(todo.items()) {
-		public void view(int pos, Todo.TodoItem value) {
+		RenderableAdapter.withItems(todo.items(), (i, value) -> {
 			linearLayout(() -> {
 				size(FILL, WRAP);
 				minHeight(dip(72));
@@ -55,8 +53,7 @@ public class TodoView extends RenderableView {
 					checked(value.isChecked());
 				});
 			});
-		}
-	};
+		});
 
 	public void view() {
 		mTodoAdapter.notifyDataSetChanged();

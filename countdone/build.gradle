@@ -26,9 +26,10 @@ android {
 }
 
 repositories {
+	mavenLocal()
 	jcenter()
 }
 
 dependencies {
-	compile 'co.trikita:anvil:+'
+	compile 'co.trikita:anvil-sdk15:+'
 }
