@@ -40,15 +40,14 @@ public class StartView extends RenderableView {
 	
 	private AbsListView.OnScrollListener mScrollListener = new AbsListView.OnScrollListener() {
 		public void onScroll(AbsListView v, int first, int count, int total) {
-			//int top = 0;
-			//if (v.getChildCount() > 0) {
-				//top = -v.getChildAt(0).getTop() + first * v.getChildAt(0).getHeight();
-				//if (top >= 0) {
-					//mTopViewHeight = Math.max((int) (MAX_TOP_HEIGHT -
-								//top/(getResources().getDisplayMetrics().density)/1.5f), MIN_TOP_HEIGHT);
-					//System.out.println("mTopViewHeight = " + mTopViewHeight);
-				//}
-			//}
+			int top = 0;
+			if (v.getChildCount() > 0) {
+				top = -v.getChildAt(0).getTop() + first * v.getChildAt(0).getHeight();
+				if (top >= 0) {
+					mTopViewHeight = Math.max((int) (MAX_TOP_HEIGHT -
+								top/(getResources().getDisplayMetrics().density)/1.5f), MIN_TOP_HEIGHT);
+				}
+			}
 		}
 		public void onScrollStateChanged(AbsListView v, int state) {}
 	};
@@ -125,7 +124,6 @@ public class StartView extends RenderableView {
 
 	private void list(boolean withParallax) {
 		listView(() -> {
-			backgroundColor(Color.RED);
 			adapter(mTasksAdapter);
 			divider(null);
 			overScrollMode(ScrollView.OVER_SCROLL_NEVER);
@@ -133,8 +131,7 @@ public class StartView extends RenderableView {
 				size(FILL, FILL);
 				margin(dip(12));
 				onScroll(mScrollListener);
-				//top(mTopViewHeight);
-				//translationY(dip(mTopViewHeight));
+				y(dip(mTopViewHeight));
 				//margin(0, dip(mTopViewHeight), 0, 0);
 			} else {
 				size(0, FILL);
@@ -211,32 +208,32 @@ public class StartView extends RenderableView {
 					itemDate = new SimpleDateFormat("HH:mm").format(calendar.getTime());
 				}
 			}
-			button(() -> {});
-			//linearLayout(() -> {
-				//size(FILL, WRAP);
 
-				//textView(() -> {
-					//size(WRAP, dip(48));
-					//weight(1);
-					//gravity(CENTER_VERTICAL);
-					//typeface("RobotoCondensed-Bold.ttf");
-					//padding(dip(8));
-					//textSize(24);
-					//textColor(task == null ? Color.WHITE: 0x90ffffff);
-					//text(itemText);
-				//});
+			linearLayout(() -> {
+				size(FILL, WRAP);
 
-				//textView(() -> {
-					//size(WRAP, dip(48));
-					//weight(0);
-					//gravity(CENTER_VERTICAL);
-					//typeface("RobotoCondensed-Bold.ttf");
-					//padding(dip(8));
-					//textSize(24);
-					//textColor(Color.WHITE);
-					//text(itemDate);
-				//});
-			//});
+				textView(() -> {
+					size(WRAP, dip(48));
+					weight(1);
+					gravity(CENTER_VERTICAL);
+					typeface("RobotoCondensed-Bold.ttf");
+					padding(dip(8));
+					textSize(24);
+					textColor(task == null ? Color.WHITE: 0x90ffffff);
+					text(itemText);
+				});
+
+				textView(() -> {
+					size(WRAP, dip(48));
+					weight(0);
+					gravity(CENTER_VERTICAL);
+					typeface("RobotoCondensed-Bold.ttf");
+					padding(dip(8));
+					textSize(24);
+					textColor(Color.WHITE);
+					text(itemDate);
+				});
+			});
 		}
 	};
 }
