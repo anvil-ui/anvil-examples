@@ -1,18 +1,17 @@
 package com.example.anvil.animpicker;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.View;
-import android.widget.Button;
-import android.widget.FrameLayout;
+import android.view.ViewPropertyAnimator;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import static trikita.anvil.DSL.*;
 
 import trikita.anvil.Anvil;
 import trikita.anvil.RenderableView;
-import trikita.anvil.State;
 
 // A simple picker component that looks like this:
 //
@@ -32,32 +31,16 @@ import trikita.anvil.State;
 // should happen twice, or when the user presses next and previous buttons
 // quickly - two animations should happen immidiately one after another.
 //
-// It may become too complicated when thinking of it in imperative style,
-// but Anvil's declarative nature makes it really easy.
-//
 public class AnimatedPickerView extends RenderableView {
 
-	public final static int ANIM_DURATION = 300; // 300ms for each animation
+	public final static int ANIM_DURATION = 3000; // 300ms for each animation
 
-	//
-	// State is a boolean variable which can be in either of two states and can
-	// make a durable transition from one state to another
-	//
-	// This is handy to define animated events, like if we want next item animation
-	// to happen we can set next state to true, then a few milliseconds later set
-	// it back to false asking animation to stop.
-	//
-	// So, mNext state is on when the next item animation is happening,
-	// mPrev state is on when the previous item animation is happening.
-	// If both states are off - there is no animations and current item is
-	// shown in the center.
-	//
-	enum Navigation {
-		NONE,
-		PREV,
-		NEXT
-	};
-	private State mState = State.init(Navigation.NONE);
+	public final static int ANIMS_PER_NAVIGATION = 2;
+
+	enum Navigation { PREV, NEXT };
+
+	private Deque<Navigation> mNavQueue = new ArrayDeque<>();
+	private int mRunningAnims = 0;
 
 	private int mIndex = 0; // Current item index
 	private String[] mItems = { "Mercury", "Venus", "Earth", "Mars", "Jupiter",
@@ -65,39 +48,25 @@ public class AnimatedPickerView extends RenderableView {
 
 	// View width between next and prev buttons
 	// We can't tell it beforehand (it depends on the screen size and
-	// orientation), buf for animations we need to use real
-	// offsets in pixels. So we use config() binding to measure the real View
-	// instance after it's inflated and remember its width here.
+	// orientation), but for animations we need to use real
+	// offsets in pixels.
 	private int mWidth = 0;
 
 	public AnimatedPickerView(Context c) {
 		super(c);
 	}
 
-	// When next button is clicked - slowly change mNext state to true, then
-	// increase the item index, then set mNext back to false
-	private View.OnClickListener mOnNextClicked = (v) -> {
-		mState.set(Navigation.NEXT, ANIM_DURATION, () -> {
-			mIndex = (mIndex + 1) % mItems.length;
-		}).set(Navigation.NONE, 0);
-	};
-
-	// When next button is clicked - slowly change mPrev state to true, then
-	// decrease the item index, then set mPrev back to false
-	private View.OnClickListener mOnPrevClicked = (v) -> {
-		mState.set(Navigation.PREV, ANIM_DURATION, () -> {
-			mIndex = (mIndex + mItems.length - 1) % mItems.length;
-		}).set(Navigation.NONE, 0);
-	};
-
 	public void view() {
+		Navigation nav = mNavQueue.peek();
 		linearLayout(() -> {
 			size(FILL, WRAP);
 			orientation(LinearLayout.HORIZONTAL);
 
 			button(() -> {
 				text("<<<");
-				onClick(mOnPrevClicked);
+				onClick(v -> {
+					mNavQueue.offer(Navigation.PREV);
+				});
 			});
 
 			// Container for two items at most (one is disappearing, another one
@@ -107,12 +76,12 @@ public class AnimatedPickerView extends RenderableView {
 				size(WRAP, FILL);
 				weight(1);
 				orientation(LinearLayout.HORIZONTAL);
-				// here we measure container width after it's inflated (recurisvely
+
+				// here we measure container width after it's inflated recurisvely
 				// calling render() until the views have finished their layout
 				if (mWidth <= 0) {
-					mWidth = Anvil.currentView().getWidth();
-					if (mWidth == 0) {
-						Anvil.currentView().post(() -> Anvil.render());
+					if ((mWidth = Anvil.currentView().getWidth()) == 0) {
+						post(Anvil::render);
 					}
 				}
 
@@ -120,60 +89,72 @@ public class AnimatedPickerView extends RenderableView {
 				frameLayout(() -> {
 					// takes 50% of the container
 					size(mWidth/2, FILL);
-					// if it's replaced by the previous item - it's shifted full-width
-					// to the left (from 25% to -25%) and fades out.
-					anim(mState.is(Navigation.PREV),
-						of("x", mWidth/4, -mWidth/4)
-						.of("alpha", 1f, 0f)
-						.duration(ANIM_DURATION));
-					// if it's replaced by the next item - it's shifted full-width
-					// to the right (from 25% to 75%) and fades out.
-					anim(mState.is(Navigation.NEXT),
-						of("x", mWidth/4, mWidth*3/4)
-						.of("alpha", 1f, 0f)
-						.duration(ANIM_DURATION));
-					// if it's not animd at all - it's centered and is fully opaque
-					// see below, custom method to render item content
-					if (mState.is(Navigation.NONE)) {
-						System.out.println("back to default values");
-						x(mWidth/4);
-						alpha(1f);
+
+					if (nav == Navigation.PREV) {
+						slide(mWidth/4, -mWidth/4, 1f, 0f);
+					} else if (nav == Navigation.NEXT) {
+						slide(mWidth/4, mWidth*3/4, 1f, 0f);
+					} else {
+						Anvil.currentView().setX(mWidth/4);
+						Anvil.currentView().setAlpha(1f);
 					}
 
 					itemView(mIndex);
 				});
 
-
 				// Helper view - the "next" or the "previous" item
 				// It is shown only during the animation phase
 				frameLayout(() -> {
 					size(mWidth/2, FILL);
-					// previous item is moving from 75% to 25% of the container width
-					anim(mState.is(Navigation.PREV),
-						of("x", mWidth*3/4, mWidth/4)
-						.of("alpha", 0f, 1f)
-						.duration(ANIM_DURATION));
-					// next item is moving from -25% to 25% of the container width
-					anim(mState.is(Navigation.NEXT),
-						of("x", -mWidth/4, mWidth/4)
-						.of("alpha", 0f, 1f)
-						.duration(ANIM_DURATION));
-					// if no animation happens now - hide this helper view
-					visibility(!mState.is(Navigation.NONE));
-					// display the contents of the next or previous item in the list
-					if (mState.is(Navigation.NEXT)) {
+
+					if (nav == Navigation.PREV) {
+						visibility(true);
+						slide(mWidth*3/4, mWidth/4, 0f, 1f);
+						itemView(mIndex - 1);
+					} else if (nav == Navigation.NEXT) {
+						visibility(true);
+						slide(-mWidth/4, mWidth/4, 0f, 1f);
 						itemView(mIndex + 1);
 					} else {
-						itemView(mIndex - 1);
+						visibility(false);
 					}
 				});
 			});
 
 			button(() -> {
 				text(">>>");
-				onClick(mOnNextClicked);
+				onClick(v -> {
+					mNavQueue.offer(Navigation.NEXT);
+				});
 			});
 		});
+	}
+
+	// Starts property animation for the current view
+	// Uses ANIMS_PER_NAVIGATION limit to avoid starting new animations
+	// on further render cycles
+	private void slide(int from, int to, float fromAlpha, float toAlpha) {
+		if (mRunningAnims == ANIMS_PER_NAVIGATION) {
+			return;
+		}
+		mRunningAnims++;
+		// Set inital values before animation and start animation
+		Anvil.currentView().setX(from);
+		Anvil.currentView().setAlpha(fromAlpha);
+		Anvil.currentView().animate()
+			.x(to)
+			.alpha(toAlpha)
+			.setDuration(ANIM_DURATION)
+			.withEndAction(() -> {
+				// When animation is finished - decrease the number of pending
+				// animations and if coutned down to zero - pop current transition from
+				// the stack
+				mRunningAnims--;
+				if (mRunningAnims == 0) {
+					mIndex += (mNavQueue.poll() == Navigation.PREV ? -1 : +1);
+					Anvil.render();
+				}
+			});
 	}
 
 	//
