@@ -33,7 +33,7 @@ import trikita.anvil.RenderableView;
 //
 public class AnimatedPickerView extends RenderableView {
 
-	public final static int ANIM_DURATION = 3000; // 300ms for each animation
+	public final static int ANIM_DURATION = 300; // 300ms for each animation
 
 	public final static int ANIMS_PER_NAVIGATION = 2;
 
