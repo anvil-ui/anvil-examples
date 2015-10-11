@@ -40,6 +40,8 @@ class TodoView(c: Context) : RenderableView(c) {
 	}
 
 	public override fun view() {
+		todoAdapter.notifyDataSetChanged()
+
 		linearLayout {
 			size(FILL, WRAP)
 			orientation(LinearLayout.VERTICAL)
