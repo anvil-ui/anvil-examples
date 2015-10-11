@@ -69,6 +69,8 @@ public class TodoView extends RenderableView {
 			});
 
 	public void view() {
+		mTodoAdapter.notifyDataSetChanged();
+
 		o (linearLayout(),
 			size(FILL, WRAP),
 			orientation(LinearLayout.VERTICAL),
