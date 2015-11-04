@@ -29,7 +29,7 @@ import trikita.anvil.RenderableView;
 //
 // Of course, if user clicks next button twice too fast - the animation
 // should happen twice, or when the user presses next and previous buttons
-// quickly - two animations should happen immidiately one after another.
+// quickly - two animations should happen immediately one after another.
 //
 public class AnimatedPickerView extends RenderableView {
 
@@ -77,7 +77,7 @@ public class AnimatedPickerView extends RenderableView {
 				weight(1);
 				orientation(LinearLayout.HORIZONTAL);
 
-				// here we measure container width after it's inflated recurisvely
+				// here we measure container width after it's inflated recursively
 				// calling render() until the views have finished their layout
 				if (mWidth <= 0) {
 					if ((mWidth = Anvil.currentView().getWidth()) == 0) {
@@ -138,7 +138,7 @@ public class AnimatedPickerView extends RenderableView {
 			return;
 		}
 		mRunningAnims++;
-		// Set inital values before animation and start animation
+		// Set initial values before animation and start animation
 		Anvil.currentView().setX(from);
 		Anvil.currentView().setAlpha(fromAlpha);
 		Anvil.currentView().animate()
@@ -147,7 +147,7 @@ public class AnimatedPickerView extends RenderableView {
 			.setDuration(ANIM_DURATION)
 			.withEndAction(() -> {
 				// When animation is finished - decrease the number of pending
-				// animations and if coutned down to zero - pop current transition from
+				// animations and if counted down to zero - pop current transition from
 				// the stack
 				mRunningAnims--;
 				if (mRunningAnims == 0) {
