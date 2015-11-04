@@ -22,7 +22,7 @@ This repository contains small examples of how Anvil can be used.
 * [Item picker][7] - animated item picker component with next/prev buttons
 	- how to use animations
 	- how to use states
-	- how to use config() to get access to the real View object
+	- how to use currentView() to get access to the real View object
 	- how to use Java8 lambdas in Anvil
 * [Currency exchange app][8] - fetches latest currency rates from the backend, calculates converted values as you type.
 	- how to separate model logic from the view logic
