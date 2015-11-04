@@ -19,6 +19,45 @@ import trikita.anvil.Anvil;
 import trikita.anvil.RenderableAdapter;
 import trikita.anvil.RenderableView;
 
+// A component that shows and converts values of two currencies
+//
+// UI looks like this:
+//
+// [currency 1 picker] [currency 1 input]
+// [currency 2 picker] [currency 2 input]
+//
+// Users can change currency in one of the pickers
+// Changing one currency will trigger change in value of another currency
+//
+// e.g. currently we have
+//
+// [USD] [100.0]
+// [EUR] [91.10787]
+//
+// We change USD to CAD, and now we have
+//
+// [CAD] [100.0]
+// [EUR] [69.41552]
+//
+// Notice the value of EUR has been changed
+//
+// Users can also change value in one of the inputs
+// Changing one value will trigger change in value of another currency
+//
+// e.g. currently we have
+//
+// [USD] [100.0]
+// [EUR] [91.10787]
+//
+// We change 100 to 200, and now we have
+//
+// [USD] [200.0]
+// [EUR] [182.21574]
+//
+// Notice the value of EUR has been changed
+//
+// In a word, the UI is always expected to update
+// such that value of currency 1 is equivalent to value of currency 2, according to exchange rate
 public class CurrencyView extends RenderableView {
 
 	private CurrencyManager mCurrencyManager = CurrencyManager.getInstance();
