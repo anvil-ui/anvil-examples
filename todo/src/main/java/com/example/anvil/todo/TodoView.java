@@ -15,6 +15,13 @@ import static trikita.anvil.DSL.*;
 import trikita.anvil.RenderableAdapter;
 import trikita.anvil.RenderableView;
 
+// A classic to-do list application
+//
+// You have a list of to-do items
+// You can add to this list
+// You can check an item in the list as "completed"
+// "Completed" items still stay in the list
+// You can actually remove all "completed" items from the list
 public class TodoView extends RenderableView {
 	private Todo todo = Todo.getInstance();
 
@@ -43,6 +50,11 @@ public class TodoView extends RenderableView {
 		}
 	};
 
+    // Create an adapter with a list of to-do items
+    // This is the adapter for the list of to-do items
+    // It looks more complex than the simple-one-TextView adapter in the currency example
+    // but it is still the analogy to the original list adapter
+    // view() method is still the analogy to the original getView() method in original list adapter
 	RenderableAdapter mTodoAdapter = RenderableAdapter.withItems(todo.items(),
 			new RenderableAdapter.Item<Todo.TodoItem>() {
 				public void view(int pos, Todo.TodoItem value) {

@@ -11,6 +11,13 @@ import trikita.anvil.RenderableAdapter
 import trikita.anvil.BaseDSL.*
 import trikita.anvil.DSL.*
 
+// A classic to-do list application
+//
+// You have a list of to-do items
+// You can add to this list
+// You can check an item in the list as "completed"
+// "Completed" items still stay in the list
+// You can actually remove all "completed" items from the list
 class TodoView(c: Context) : RenderableView(c) {
 	val message = StringBuilder("")
 

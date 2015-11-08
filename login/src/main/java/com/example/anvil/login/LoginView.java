@@ -97,7 +97,7 @@ public class LoginView extends RenderableView {
 				visibility(mIsLoggingIn);
 			});
 
-				// Error message, visible only when login is in progress
+			// Error message, visible only when login is in progress
 			textView(() -> {
 				textColor(Color.RED);
 				text(R.string.error_label);
@@ -113,7 +113,7 @@ public class LoginView extends RenderableView {
 				hint(R.string.login_placeholder);
 				// Enabled when no login is in progress
 				enabled(!mIsLoggingIn);
-				// Update mLogin variablea as the user enters text
+				// Update mLogin variable as the user enters text
 				text(mLogin);
 			});
 
@@ -125,7 +125,7 @@ public class LoginView extends RenderableView {
 				hint(R.string.password_placeholder);
 				// Enabled when no login is in progress
 				enabled(!mIsLoggingIn);
-				// Update mPassword variablea as the user enters text
+				// Update mPassword variable as the user enters text
 				text(mPassword);
 			});
 
