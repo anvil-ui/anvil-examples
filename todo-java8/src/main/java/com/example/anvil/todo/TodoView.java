@@ -15,6 +15,17 @@ import trikita.anvil.Anvil;
 import trikita.anvil.RenderableAdapter;
 import trikita.anvil.RenderableView;
 
+// A classic to-do list application
+//
+// You have a list of to-do items
+// You can add to this list
+// You can check an item in the list as "completed"
+// "Completed" items still stay in the list
+// You can actually remove all "completed" items from the list
+//
+// Major difference from Java-7 version:
+// Lambda expressions are used
+// In render() method Anvil DSL's are used
 public class TodoView extends RenderableView {
 	private Todo todo = Todo.getInstance();
 
