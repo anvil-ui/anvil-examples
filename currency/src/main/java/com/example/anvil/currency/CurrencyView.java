@@ -23,10 +23,10 @@ import trikita.anvil.RenderableView;
 //
 // UI looks like this:
 //
-// [currency 1 picker] [currency 1 input]
-// [currency 2 picker] [currency 2 input]
+// [currency 1 spinner] [currency 1 input]
+// [currency 2 spinner] [currency 2 input]
 //
-// Users can change currency in one of the pickers
+// Users can change currency in one of the spinners
 // Changing one currency will trigger change in value of another currency
 //
 // e.g. currently we have
@@ -62,15 +62,49 @@ public class CurrencyView extends RenderableView {
 
 	private CurrencyManager mCurrencyManager = CurrencyManager.getInstance();
 
+    // Explanations on Mutable wrappers of currency option and currency value
+    // The Mutable wrapper is a collection of a value and a flag indicating
+    // whether the recent change of the value is made by user (=fromUser)
+    // By default fromUser is false
+    //
+    // In this scenario, every operation works as usual
+    // e.g. setting and getting values without setting fromUser flag to true
+    //
+    // The only moment this flag is set to true is when the change is directly triggered by a user
+    // For example:
+    // If a user manually changes the value in input 1, the fromUser flag in value 1 is set to true
+    // The value of input 2 is ought to be changed by code logic but its fromUser flag remains false
+    //
+    // The purpose of distinguishing such two types of operations (by user/by code logic) is to
+    //
+    // 1. If the input is changed by user, then for every render cycle we don't want to re-render the value
+    // because it's going to interfere with user's editing action
+    // e.g. in EditText if you are editing a value, you would expect the cursor to always point to last position
+    // but re-rendering every cycle would cause the cursor to reset to first position often
+    //
+    // 2. If the input is not changed by user, then for every render cycle the value will be updated by code logic
+    //
+    // We can refer value with fromUser flag true as "dummy" value
+    // We can refer value with fromUser flag false as "reactive" value
+
+	// Index of currency spinners
 	private Mutable<Integer> mFirstIndex = new Mutable<>(-1);
 	private Mutable<Integer> mSecondIndex = new Mutable<>(-1);
 
+	// Values of currencies
 	private Mutable<Float> mFirstSum = new Mutable<>(100.0f);
 	private Mutable<Float> mSecondSum = new Mutable<>(0.f);
 
+	// TextWatcher's in which afterTextChanged will be called after the texts of inputs are changed
 	private TextWatcher mFirstWatcher = bindValue(mFirstSum);
 	private TextWatcher mSecondWatcher = bindValue(mSecondSum);
 
+	// Adapter of currency spinners
+	// It's conceptually equivalent to a ListView adapter implementation
+	//
+	// The view(int) method returns a view for each item in the spinner
+	// It's conceptually equivalent to getView() method in a ListView adapter implementation
+	// In this case the returned view is just a simple TextView
 	private RenderableAdapter mCurrencyAdapter = new RenderableAdapter() {
 		public int getCount() {
 			if (mCurrencyManager.isSyncing()) {
@@ -97,9 +131,13 @@ public class CurrencyView extends RenderableView {
 		super(c);
 	}
 
+	// This method is called every render cycle
+	// but it's major logic (try to set up default currencies to be USD and EUR)
+	// is only executed once
 	private void setupAdapters() {
 		if (mCurrencyManager.isSyncing() == false &&
 				mCurrencyManager.currencies().size() >= 2) {
+			// If the manager is not doing network request and there are more than 2 currencies for fallback
 			if (mFirstIndex.get() == -1 && mSecondIndex.get() == -1) {
 				// Looks like the first render after data was synced
 				int i = mCurrencyManager.currencies().indexOf("USD");
@@ -118,17 +156,26 @@ public class CurrencyView extends RenderableView {
 		}
 	}
 
+	// Create a new TextWatch, given a value
+    // This method applies to values of two inputs
 	private TextWatcher bindValue(final Mutable<Float> value) {
 		return new TextWatcher() {
 			public void afterTextChanged(Editable s) {
+                // After the text of the binding input is changed
 				try {
+                    // Try to cast the string input into float
 					float n = Float.valueOf(s.toString());
-					if (n != value.get()) {
+                    // If the pre-edit value is different from the post-edit value
+                    if (n != value.get()) {
+                        // Set the value with post-edit value, and indicate this value is now "dummy"
 						value.set(n, true);
+                        // Update another value
 						update(value);
 					}
 				} catch (NumberFormatException e) {
+                    // If failed casting just assume post-edit value to 0
 					value.set(0f, true);
+                    // Update another value
 					update(value);
 				}
 			}
@@ -138,13 +185,18 @@ public class CurrencyView extends RenderableView {
 	}
 
 	private void update(Mutable<Float> value) {
+        // If "dummy" value is the first sum,
+        // then set second sum's value,
+        // and set second sum as "reactive" value
 		if (value == mFirstSum) {
 			mSecondSum.set(mCurrencyManager.
 				exchange(mFirstIndex.get(), mSecondIndex.get(), value.get()));
+        // Vice versa
 		} else {
 			mFirstSum.set(mCurrencyManager.
 				exchange(mSecondIndex.get(), mFirstIndex.get(), value.get()));
 		}
+        // Re-render now
 		Anvil.render();
 	}
 
@@ -171,6 +223,7 @@ public class CurrencyView extends RenderableView {
 				editText(() -> {
 					inputStyle();
 					onTextChanged(mFirstWatcher);
+                    // If first sum is "reactive" then re-render
 					if (mFirstSum.isModifiedByUser() == false) {
 						text(mFirstSum.get(true).toString());
 					}
@@ -193,6 +246,7 @@ public class CurrencyView extends RenderableView {
 				editText(() -> {
 					inputStyle();
 					onTextChanged(mSecondWatcher);
+                    // If second sum is "reactive" then re-render
 					if (mSecondSum.isModifiedByUser() == false) {
 						text(mSecondSum.get(true).toString());
 					}
@@ -201,11 +255,13 @@ public class CurrencyView extends RenderableView {
 		});
 	}
 
+	// Separate spinner style from logic
 	private void spinnerStyle() {
 		size(0, FILL);
 		weight(0.4f);
 	}
 
+	// Separate input style from logic
 	private void inputStyle() {
 		size(0, FILL);
 		weight(0.6f);
