@@ -8,7 +8,6 @@ import trikita.anvil.RenderableAdapter
 
 // Kotlin has a bug with importing static methods
 // so we have to import whole hierarchy of classes instead
-import trikita.anvil.BaseDSL.*
 import trikita.anvil.DSL.*
 
 // A classic to-do list application
@@ -46,7 +45,7 @@ class TodoView(c: Context) : RenderableView(c) {
 		}
 	}
 
-	public override fun view() {
+	override fun view() {
 		todoAdapter.notifyDataSetChanged()
 
 		linearLayout {
@@ -66,10 +65,10 @@ class TodoView(c: Context) : RenderableView(c) {
 					size(WRAP, WRAP)
 					layoutGravity(CENTER_VERTICAL)
 					text("Add")
-					enabled(message.toString().trim().length() != 0)
+					enabled(message.toString().trim().length != 0)
 					onClick {
 						Todo.add(message.toString())
-						message.delete(0, message.length())
+						message.delete(0, message.length)
 					}
 				}
 			}
