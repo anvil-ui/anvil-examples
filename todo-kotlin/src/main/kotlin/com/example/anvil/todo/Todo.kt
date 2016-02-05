@@ -1,37 +1,24 @@
 package com.example.anvil.todo
 
-import java.util.ArrayList
-
 object Todo {
-	val items = ArrayList<TodoItem>()
+	val items = mutableListOf<TodoItem>()
 
-	public fun add(msg: String) {
+	fun add(msg: String) {
 		items.add(TodoItem(msg, false))
 	}
 
-	public fun toggle(index: Int) {
-		val item = items.get(index)
+	fun toggle(index: Int) {
+		val item = items[index]
 		item.checked = !item.checked
 	}
 
-	public fun clear() {
-		val iter = items.iterator()
-		while (iter.hasNext()) {
-			if (iter.next().checked) {
-				iter.remove()
-			}
-		}
+	fun clear() {
+		items.filter { it.checked }.forEach { todoItem -> items.remove(todoItem) }
 	}
 
-	public fun hasChecked() : Boolean {
-		for (item: TodoItem in items) {
-			if (item.checked)
-				return true
-		}
-		return false
-	}
+	fun hasChecked() : Boolean = items.any { it.checked }
 
-	public data class TodoItem(val message: String, var checked: Boolean)
+	data class TodoItem(val message: String, var checked: Boolean)
 }
 
 
