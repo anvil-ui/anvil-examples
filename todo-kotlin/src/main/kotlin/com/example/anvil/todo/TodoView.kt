@@ -18,7 +18,7 @@ import trikita.anvil.DSL.*
 // "Completed" items still stay in the list
 // You can actually remove all "completed" items from the list
 class TodoView(c: Context) : RenderableView(c) {
-	val message = StringBuilder("")
+	var message = ""
 
 	var todoAdapter = RenderableAdapter.withItems(Todo.items) { pos, value ->
 		linearLayout {
@@ -59,16 +59,19 @@ class TodoView(c: Context) : RenderableView(c) {
 					size(0, WRAP)
 					weight(1f)
 					text(message)
+					onTextChanged { s ->
+						message = s.toString()
+					}
 				}
 
 				button {
 					size(WRAP, WRAP)
 					layoutGravity(CENTER_VERTICAL)
 					text("Add")
-					enabled(message.toString().trim().length != 0)
+					enabled(message.trim().length != 0)
 					onClick {
-						Todo.add(message.toString())
-						message.delete(0, message.length)
+						Todo.add(message)
+						message = ""
 					}
 				}
 			}

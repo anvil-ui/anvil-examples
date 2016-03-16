@@ -29,15 +29,15 @@ import trikita.anvil.RenderableView;
 public class TodoView extends RenderableView {
 	private Todo todo = Todo.getInstance();
 
-	private StringBuilder message = new StringBuilder();
+	private String message = "";
 
 	public TodoView(Context c) {
 		super(c);
 	}
 
 	private void onAddClicked(View v) {
-		todo.add(message.toString());
-		message.delete(0, message.length());
+		todo.add(message);
+		message = "";
 	}
 
 	RenderableAdapter mTodoAdapter =
@@ -80,13 +80,16 @@ public class TodoView extends RenderableView {
 					size(0, WRAP);
 					weight(1);
 					text(message);
+					onTextChanged(s -> {
+						message = s.toString();
+					});
 				});
 
 				button(() -> {
 					size(WRAP, WRAP);
 					layoutGravity(CENTER_VERTICAL);
 					text("Add");
-					enabled(message.toString().trim().length() != 0);
+					enabled(message.trim().length() != 0);
 					onClick(this::onAddClicked);
 				});
 

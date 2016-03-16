@@ -40,8 +40,8 @@ import trikita.anvil.RenderableView;
 public class LoginView extends RenderableView {
 
 	// Current input: login and password strings
-	private StringBuilder mLogin = new StringBuilder("");
-	private StringBuilder mPassword = new StringBuilder("");
+	private String mLogin = "";
+	private String mPassword = "";
 
 	// Current flags: "has last login failed" and "is login in progress now"
 	private boolean mLoginFailed = false;
@@ -59,7 +59,7 @@ public class LoginView extends RenderableView {
 	// Click listener for the login button
 	private void onLoginClicked(View v) {
 		mIsLoggingIn = true;
-		performLogin(mLogin.toString(), mPassword.toString());
+		performLogin(mLogin, mPassword);
 	}
 
 	// This should really call API service and must not be part of the View class
@@ -115,6 +115,9 @@ public class LoginView extends RenderableView {
 				enabled(!mIsLoggingIn);
 				// Update mLogin variable as the user enters text
 				text(mLogin);
+				onTextChanged(s -> {
+					mLogin = s.toString();
+				});
 			});
 
 			textView(() -> {
@@ -127,6 +130,9 @@ public class LoginView extends RenderableView {
 				enabled(!mIsLoggingIn);
 				// Update mPassword variable as the user enters text
 				text(mPassword);
+				onTextChanged(s -> {
+					mPassword = s.toString();
+				});
 			});
 
 			button(() -> {

@@ -6,20 +6,12 @@ import android.view.View;
 
 public class MainActivity extends Activity {
 
-	private Backstack mBackstack = new Backstack(this, new Backstack.Listener() {
-		public void setContentView(View v) {
-			MainActivity.this.setContentView(v);
-		}
-	});
+	private boolean home = true;
 
 	@Override
 	public void onCreate(Bundle b) {
 		super.onCreate(b);
-		if (b != null) {
-			mBackstack.load(b);
-		} else {
-			mBackstack.navigate(new StartView(this));
-		}
+		setContentView(new StartView(this));
 	}
 
 	@Override
@@ -45,19 +37,25 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
-	public void onSaveInstanceState(Bundle b) {
-		mBackstack.save(b);
-		super.onSaveInstanceState(b);
-	}
-
-	@Override
 	public void onBackPressed() {
-		if (!mBackstack.back()) {
-			finish();
+		if (home) {
+			super.onBackPressed();
+		} else {
+			toStart();
 		}
 	}
 
-	public Backstack getBackstack() {
-		return mBackstack;
+	public void toStart() {
+		home = true;
+		setContentView(new StartView(this));
+	}
+
+	public void toCountdown(Tasks.Task t) {
+		home = false;
+		if (t != null) {
+			setContentView(new CountDownView(this).withTask(t));
+		} else {
+			setContentView(new CountDownView(this));
+		}
 	}
 }

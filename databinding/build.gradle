@@ -35,5 +35,5 @@ repositories {
 }
 
 dependencies {
-    compile 'co.trikita:anvil-sdk15:0.2.0'
+    compile 'co.trikita:anvil-sdk15:0.3.0'
 }

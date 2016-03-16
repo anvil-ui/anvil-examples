@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Countdone</string>
+	<string name="app_name">Anvil:Countdone</string>
 
 	<string name="create">NEW</string>
 	<string name="resume">GO ON</string>
@@ -13,6 +13,6 @@
 	<string name="set_time">SET TIME</string>
 	<string name="set_time_title">Set time</string>
 
-	<string name="list_group_completed">COMPELTED</string>
+	<string name="list_group_completed">COMPLETED</string>
 	<string name="list_group_failed">FAILED</string>
 </resources>

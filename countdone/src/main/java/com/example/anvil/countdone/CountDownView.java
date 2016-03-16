@@ -28,7 +28,6 @@ public class CountDownView extends RenderableView {
 
 	private Tasks.Task mCurrentTask;
 	private boolean mTimeIsSet = false;
-	private Backstack mBackstack;
 
 	private Tasks mTasks = Tasks.getInstance();
 
@@ -44,9 +43,6 @@ public class CountDownView extends RenderableView {
 	};
 
 	private View.OnClickListener mStartClicked = (v) -> {
-		// TODO: this should be declarative using a TextWatcher
-		String s = ((EditText) findViewById(TASK_NAME_EDITTEXT_ID)).getText().toString();
-		mCurrentTask.setName(s);
 		mCurrentTask.start();
 	};
 
@@ -62,19 +58,19 @@ public class CountDownView extends RenderableView {
 	};
 
 	private View.OnClickListener mTimeClicked = (v) -> {
-		TimePickerDialog picker = new TimePickerDialog(v.getContext(), (p, hour, minute) -> {
-			mCurrentTask.setDuration((hour * 60 + minute ) * 60 * 1000);
-			mTimeIsSet = true;
-			Anvil.render();
-		}, (int) mCurrentTask.getRemainder()/60/60/1000,
-		(int) (mCurrentTask.getRemainder()/60/1000)%60, true);
+		TimePickerDialog picker = new TimePickerDialog(v.getContext(),
+			TimePickerDialog.THEME_DEVICE_DEFAULT_LIGHT, (p, hour, minute) -> {
+				mCurrentTask.setDuration((hour * 60 + minute ) * 60 * 1000);
+				mTimeIsSet = true;
+				Anvil.render();
+			}, (int) mCurrentTask.getRemainder()/60/60/1000,
+			(int) (mCurrentTask.getRemainder()/60/1000)%60, true);
 		picker.setTitle(R.string.set_time_title);
 		picker.show();
 	};
 
 	public CountDownView(Context c) {
 		super(c);
-		mBackstack = ((MainActivity) c).getBackstack();
 		mCurrentTask = mTasks.getCurrent();
 		if (mCurrentTask == null) {
 			mCurrentTask = mTasks.create("New task", 25 * 60 * 1000);
@@ -90,18 +86,7 @@ public class CountDownView extends RenderableView {
 	}
 
 	private void finish() {
-		mBackstack.back();
-	}
-
-	@Override
-	public void onAttachedToWindow() {
-		super.onAttachedToWindow();
-		post(() -> {
-			// Put cursor at the end of the edit text
-			EditText editText = (EditText) findViewById(TASK_NAME_EDITTEXT_ID);
-			editText.requestFocus();
-			editText.setSelection(editText.getText().length());
-		});
+		((MainActivity) getContext()).toStart();
 	}
 
 	@Override
@@ -134,7 +119,7 @@ public class CountDownView extends RenderableView {
 		textColor(Color.WHITE);
 		clickable(true);
 		typeface("Material-Design-Icons.ttf");
-		textSize(36);
+		textSize(sip(36));
 		backgroundResource(R.drawable.header_button);
 		text(s);
 	}
@@ -171,6 +156,7 @@ public class CountDownView extends RenderableView {
 						post(() -> {
 							EditText editText = (EditText) findViewById(TASK_NAME_EDITTEXT_ID);
 							editText.requestFocus();
+							editText.setSelection(editText.getText().length());
 						});
 					});
 				});
@@ -199,7 +185,7 @@ public class CountDownView extends RenderableView {
 						size(FILL, WRAP);
 						gravity(CENTER);
 						textColor(Color.WHITE);
-						textSize(isPortrait() ? 42 : 36);
+						textSize(sip(isPortrait() ? 42 : 36));
 						singleLine(true);
 						focusable(mCurrentTask.isNew() || mCurrentTask.isPaused());
 						focusableInTouchMode(mCurrentTask.isNew() || mCurrentTask.isPaused());
@@ -209,13 +195,19 @@ public class CountDownView extends RenderableView {
 						typeface("RobotoCondensed-Light.ttf");
 						hint(R.string.task_name_hint);
 						text(mCurrentTask.getName());
+						onTextChanged(s -> {
+							mCurrentTask.setName(s.toString());
+						});
+						init(() -> {
+							((EditText) Anvil.currentView()).requestFocus();
+						});
 					});
 
 					textView(() -> {
 						size(FILL, WRAP);
 						gravity(CENTER);
 						textColor(Color.WHITE);
-						textSize(isPortrait() ? 67 : 42);
+						textSize(sip(isPortrait() ? 67 : 42));
 						clickable(mCurrentTask.isNew() || mCurrentTask.isPaused());
 						onClick(mTimeClicked);
 						typeface("RobotoCondensed-Bold.ttf");
@@ -237,7 +229,7 @@ public class CountDownView extends RenderableView {
 					clickable(true);
 					backgroundResource(R.drawable.black_button);
 					textColor(Color.WHITE);
-					textSize(24);
+					textSize(sip(24));
 					enabled(!mCurrentTask.isNew() || mTimeIsSet);
 					typeface("RobotoCondensed-Light.ttf");
 					onClick(mCurrentTask.isRunning() ? mDoneClicked :

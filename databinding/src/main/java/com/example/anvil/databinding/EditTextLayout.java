@@ -32,14 +32,6 @@ public class EditTextLayout extends RenderableView {
             onTextChanged((s) -> {
                 value = s.toString();
             });
-            //onTextChanged(new TextWatcher() {
-                //public void	afterTextChanged(Editable s) {}
-                //public void	beforeTextChanged(CharSequence s, int from, int n, int after) {}
-                //public void	onTextChanged(CharSequence s, int from, int before, int n) {
-                    //System.out.println("s="+s);
-                    //value = s.toString();
-                //}
-            //});
         });
     }
 }

@@ -32,8 +32,6 @@ public class StartView extends RenderableView {
 	final static int BUTTON_SIZE = (int) (MIN_TOP_HEIGHT * 0.8);
 	final static int BACKGROUND_COLOR = 0xff3f51b5;
 
-	private Backstack mBackstack;
-
 	private int mTopViewHeight = MAX_TOP_HEIGHT;
 
 	private RenderableAdapter mTasksAdapter = new TasksAdapter();
@@ -54,13 +52,12 @@ public class StartView extends RenderableView {
 
 	private View.OnClickListener mOnOpenCountDownView = new View.OnClickListener() {
 		public void onClick(View v) {
-			mBackstack.navigate(new CountDownView(getContext()));
+			((MainActivity) getContext()).toCountdown(null);
 		}
 	};
 
 	public StartView(Context c) {
 		super(c);
-		mBackstack = ((MainActivity) c).getBackstack();
 	}
 
 	@Override
@@ -115,7 +112,7 @@ public class StartView extends RenderableView {
 			gravity(CENTER);
 			backgroundResource(R.drawable.black_button);
 			textColor(Color.WHITE);
-			textSize(24);
+			textSize(sip(24));
 			typeface("RobotoCondensed-Light.ttf");
 			onClick(mOnOpenCountDownView);
 			text(Tasks.getInstance().getCurrent() == null ? R.string.create : R.string.resume);
@@ -140,7 +137,7 @@ public class StartView extends RenderableView {
 			onItemClick((adapterView, v, pos, id) -> {
 				Tasks.Task task = (Tasks.Task) mTasksAdapter.getItem(pos);
 				// make it a current task
-				mBackstack.navigate(new CountDownView(getContext()).withTask(task));
+				((MainActivity) getContext()).toCountdown(task);
 			});
 		});
 	}
@@ -218,7 +215,7 @@ public class StartView extends RenderableView {
 					gravity(CENTER_VERTICAL);
 					typeface("RobotoCondensed-Bold.ttf");
 					padding(dip(8));
-					textSize(24);
+					textSize(sip(24));
 					textColor(task == null ? Color.WHITE: 0x90ffffff);
 					text(itemText);
 				});
@@ -229,7 +226,7 @@ public class StartView extends RenderableView {
 					gravity(CENTER_VERTICAL);
 					typeface("RobotoCondensed-Bold.ttf");
 					padding(dip(8));
-					textSize(24);
+					textSize(sip(24));
 					textColor(Color.WHITE);
 					text(itemDate);
 				});

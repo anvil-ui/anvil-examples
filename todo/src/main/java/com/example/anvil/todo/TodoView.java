@@ -25,7 +25,7 @@ import trikita.anvil.RenderableView;
 public class TodoView extends RenderableView {
 	private Todo todo = Todo.getInstance();
 
-	private StringBuilder message = new StringBuilder("");
+	private String message = "";
 
 	public TodoView(Context c) {
 		super(c);
@@ -33,8 +33,8 @@ public class TodoView extends RenderableView {
 
 	View.OnClickListener mOnAddClicked = new View.OnClickListener() {
 		public void onClick(View v) {
-			todo.add(message.toString());
-			message.delete(0, message.length());
+			todo.add(message);
+			message = "";
 		}
 	};
 
@@ -93,13 +93,18 @@ public class TodoView extends RenderableView {
 				o (editText(),
 					size(0, WRAP),
 					weight(1),
-					text(message)),
+					text(message),
+					onTextChanged(new SimpleTextWatcher() {
+					    public void onTextChanged(CharSequence s) {
+						message = s.toString();
+					    }
+					})),
 
 				o (button(),
 					size(WRAP, WRAP),
 					layoutGravity(CENTER_VERTICAL),
 					text("Add"),
-					enabled(message.toString().trim().length() != 0),
+					enabled(message.trim().length() != 0),
 					onClick(mOnAddClicked))),
 
 				o (button(),
