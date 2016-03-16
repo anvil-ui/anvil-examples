@@ -12,7 +12,7 @@ public class MainLayout extends RenderableView {
     public final static String[] LAYOUTS = {
         "CalendarLayout", "CheckBoxLayout", "EditTextLayout", "ExpandableListLayout",
         "NumberPickerLayout", "RadioGroupLayout", "RatingBarLayout", "SeekBarLayout",
-        "SpinnerLayout", "TimePicker"
+        "SpinnerLayout", "TimePickerLayout"
     };
 
     private ArrayAdapter<String> mAdapter;
@@ -20,16 +20,6 @@ public class MainLayout extends RenderableView {
     public MainLayout(Context c) {
         super(c);
         mAdapter = new ArrayAdapter<>(c, android.R.layout.simple_list_item_1, LAYOUTS);
-    }
-
-    @Override
-    public void onAttachedToWindow() {
-        super.onAttachedToWindow();
-    }
-
-    @Override
-    public void onDetachedFromWindow() {
-        super.onAttachedToWindow();
     }
 
     @Override
