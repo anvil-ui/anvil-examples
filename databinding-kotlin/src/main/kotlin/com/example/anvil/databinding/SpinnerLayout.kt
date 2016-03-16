@@ -39,9 +39,8 @@ class SpinnerLayout(c: Context) : RenderableView(c) {
                 adapter(adp)
             })
             selection(index)
-            onItemSelected(SimpleItemSelectedListener { parent, v, pos, id -> index = pos })
+            onItemSelected({ parent, v, pos, id -> index = pos })
         }
-
     }
 }
 
