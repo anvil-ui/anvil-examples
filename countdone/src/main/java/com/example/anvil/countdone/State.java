@@ -2,7 +2,6 @@ package com.example.anvil.countdone;
 
 import android.support.annotation.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.immutables.value.Value;
@@ -49,41 +48,8 @@ public abstract class State {
 	public static State getDefault() {
 		return ImmutableState.builder()
 			.currentTask(null)
-			.completed(initCompleted())
-			.failed(initFailed())
 			.durationSet(false)
 			.home(true)
 			.build();
 	}
-
-	public static List<Task> initCompleted() {
-		List<Task> tasks = new ArrayList<>();
-		for (int i = 0; i < 2; i++) {
-			tasks.add(ImmutableTask.builder()
-						.name("NEW COMPLETED TASK")
-						.duration(15000)
-						.status(Task.Status.COMPLETED)
-						.started(Task.NEVER)
-						.stopped(Task.now())
-						.remainder(0)
-						.build());
-		}
-		return tasks;
-	}
-
-	public static List<Task> initFailed() {
-		List<Task> tasks = new ArrayList<>();
-		for (int i = 0; i < 2; i++) {
-			tasks.add(ImmutableTask.builder()
-						.name("NEW FAILED TASK")
-						.duration(15000)
-						.status(Task.Status.COMPLETED)
-						.started(Task.NEVER)
-						.stopped(Task.now())
-						.remainder(0)
-						.build());
-		}
-		return tasks;
-	}
-
 }

@@ -7,7 +7,7 @@ import org.immutables.gson.Gson;
 @Gson.TypeAdapters
 public abstract class Task {
 
-	public final static long NEVER = -1;
+	private final static long NEVER = -1;
 
 	enum Status {
 		NEW,

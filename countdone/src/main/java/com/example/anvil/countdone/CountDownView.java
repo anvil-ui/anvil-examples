@@ -104,8 +104,6 @@ public class CountDownView extends RenderableView {
 		TimePickerDialog picker = new TimePickerDialog(v.getContext(),
 			TimePickerDialog.THEME_DEVICE_DEFAULT_LIGHT, (p, hour, minute) -> {
 				App.dispatch(new CountdoneAction(CountdoneAction.Type.SET_DURATION, (hour * 60 + minute ) * 60 * 1000L));
-				//mTimeIsSet = true;
-				Anvil.render();
 			}, (int) App.state().currentTask().remainder()/60/60/1000,
 			(int) (App.state().currentTask().remainder()/60/1000)%60, true);
 		picker.setTitle(R.string.set_time_title);
@@ -120,7 +118,8 @@ public class CountDownView extends RenderableView {
 			} else if (App.state().isTaskFinished()) {
 				String n = App.state().currentTask().name();
 				long d = App.state().currentTask().duration();
-				App.dispatch(new CountdoneAction(CountdoneAction.Type.NEW_TASK, new Pair(n, d)));
+				App.dispatch(new CountdoneAction(CountdoneAction.Type.NEW_TASK,
+					new Pair<String, Long>(n, d)));
 				App.dispatch(new CountdoneAction(CountdoneAction.Type.START));
 			} else {
 				App.dispatch(new CountdoneAction(CountdoneAction.Type.START));

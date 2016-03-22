@@ -31,30 +31,26 @@ public class App extends Application {
 		super.onCreate();
 	}
 
-	private static App getInstance() {
-		return sInstance;
-	}
-
 	public static Store store() {
-		return getInstance().store;
+		return sInstance.store;
 	}
 
 	public static State dispatch(CountdoneAction action) {
-		return getInstance().store.dispatch(action);
+		return sInstance.store.dispatch(action);
 	}
 
 	public static State state() {
-		return getInstance().store.getState();
+		return sInstance.store.getState();
 	}
 
 	public State reduce(CountdoneAction<?> action, State old) {
 		switch (action.type) {
 			case NEW_TASK:
 				if (action.value != null) {
-					Pair p = (Pair) action.value;
+					Pair<String, Long> p = (Pair<String, Long>) action.value;
 					return ImmutableState.builder()
 						.from(old)
-						.currentTask(Task.newTask((String) p.first, (Long) p.second))
+						.currentTask(Task.newTask(p.first, p.second))
 						.durationSet(false)
 						.build();
 				} else {
@@ -115,13 +111,9 @@ public class App extends Application {
 					.build();
 			case REMOVE_TASK:
 				List<Task> completed = new ArrayList<>(old.completed());
-				System.out.println("REMOVE_TASK: completed size="+completed.size());
 				boolean done = completed.remove(old.currentTask());
-				System.out.println("REMOVE_TASK: completed removed " + done);
 				List<Task> failed = new ArrayList<>(old.failed());
-				System.out.println("REMOVE_TASK: failed size="+failed.size());
 				done = failed.remove(old.currentTask());
-				System.out.println("REMOVE_TASK: failed removed " + done);
 				return ImmutableState.builder()
 					.from(old)
 					.completed(completed)
