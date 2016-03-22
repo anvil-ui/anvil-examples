@@ -17,6 +17,10 @@ android {
 		minSdkVersion 15
 		targetSdkVersion 23
 	}
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
 repositories {
@@ -25,5 +29,5 @@ repositories {
 }
 
 dependencies {
-	compile 'co.trikita:anvil-sdk15:0.3.0'
+	compile 'co.trikita:anvil-sdk15:0.3.1'
 }

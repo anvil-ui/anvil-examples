@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
 	compile 'org.jetbrains.kotlin:kotlin-stdlib:+'
-	compile 'co.trikita:anvil-sdk15:0.3.0'
+	compile 'co.trikita:anvil-sdk15:0.3.1'
 }
 
 android {
@@ -34,5 +34,9 @@ android {
 	sourceSets {
 		main.java.srcDirs += 'src/main/kotlin'
 	}
+
+    lintOptions {
+        abortOnError false
+    }
 }
 
