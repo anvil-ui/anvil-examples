@@ -2,14 +2,10 @@ package com.example.anvil.countdone;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.os.CountDownTimer;
+import android.util.Pair;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import static trikita.anvil.DSL.*;
 
@@ -22,106 +18,22 @@ import trikita.anvil.RenderableView;
 //
 public class CountDownView extends RenderableView {
 
-	public final static int TASK_NAME_EDITTEXT_ID = 1;
-
-	private final static int BACKGROUND_COLOR = 0xffcddc39;
-
-	private Tasks.Task mCurrentTask;
-	private boolean mTimeIsSet = false;
-
-	private Tasks mTasks = Tasks.getInstance();
-
-	// Infinite periodic timer to update UI every second
-	private CountDownTimer mTimer = new CountDownTimer(24*60*60*1000, 1000) {
-		public void onTick(long millis) {
-			Anvil.render();
-		}
-		public void onFinish() {
-			// restart timer once it's finished to make it infinite
-			this.start();
-		}
-	};
-
-	private View.OnClickListener mStartClicked = (v) -> {
-		mCurrentTask.start();
-	};
-
-	private View.OnClickListener mRestartClicked = (v) -> {
-		Tasks.Task task = mTasks.create(mCurrentTask.getName(), mCurrentTask.getDuration());
-		mCurrentTask = task;
-		mCurrentTask.start();
-	};
-
-	private View.OnClickListener mDoneClicked = (v) -> {
-		mCurrentTask.stop();
-		finish();
-	};
-
-	private View.OnClickListener mTimeClicked = (v) -> {
-		TimePickerDialog picker = new TimePickerDialog(v.getContext(),
-			TimePickerDialog.THEME_DEVICE_DEFAULT_LIGHT, (p, hour, minute) -> {
-				mCurrentTask.setDuration((hour * 60 + minute ) * 60 * 1000);
-				mTimeIsSet = true;
-				Anvil.render();
-			}, (int) mCurrentTask.getRemainder()/60/60/1000,
-			(int) (mCurrentTask.getRemainder()/60/1000)%60, true);
-		picker.setTitle(R.string.set_time_title);
-		picker.show();
-	};
+	private Runnable mUnsubscriber;
 
 	public CountDownView(Context c) {
 		super(c);
-		mCurrentTask = mTasks.getCurrent();
-		if (mCurrentTask == null) {
-			mCurrentTask = mTasks.create("New task", 25 * 60 * 1000);
-		} else if (mCurrentTask.isPaused()) {
-			mCurrentTask.start();
+		mUnsubscriber = App.store().subscribe(() -> {
+			Anvil.render();
+		});
+		if (App.state().currentTask() == null) {
+			App.dispatch(new CountdoneAction(CountdoneAction.Type.NEW_TASK, new Pair("New task", 25*60*1000L)));
 		}
-		mTimer.start();
-	}
-
-	public CountDownView withTask(Tasks.Task task) {
-		mCurrentTask = task;
-		return this;
-	}
-
-	private void finish() {
-		((MainActivity) getContext()).toStart();
 	}
 
 	@Override
 	public void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
-		if (mCurrentTask.isRunning()) {
-			mCurrentTask.pause();
-		}
-		mTimer.cancel();
-	}
-
-	private String getCountDownText() {
-		if (mCurrentTask.isNew() && !mTimeIsSet) {
-			return getContext().getString(R.string.set_time);
-		}
-		long t = (mCurrentTask.isFinished() ? mCurrentTask.getDuration() : mCurrentTask.getRemainder());
-		if (t < 0) {
-			return getContext().getString(R.string.failed);
-		}
-		return String.format("%02d:%02d:%02d",
-				t/1000/60/60,
-				(t/1000/60)%60,
-				(t/1000)%60);
-	}
-
-	private void materialIcon(String s) {
-		size(dip(48), dip(48));
-		weight(0);
-		gravity(CENTER);
-		textColor(Color.WHITE);
-		clickable(true);
-		typeface("Material-Design-Icons.ttf");
-		textSize(sip(36));
-		backgroundResource(R.drawable.header_button);
-		text(s);
+		mUnsubscriber.run();
 	}
 
 	@Override
@@ -129,150 +41,118 @@ public class CountDownView extends RenderableView {
 		linearLayout(() -> {
 			size(FILL, FILL);
 			orientation(LinearLayout.VERTICAL);
-			backgroundColor(BACKGROUND_COLOR);
+			if (!App.state().isTaskFailed()) {
+				Style.countdownBackground();
+			} else {
+				Style.failedBackground();
+			}
 
-			linearLayout(() -> {
-				size(FILL, WRAP);
-				orientation(LinearLayout.HORIZONTAL);
-				layoutGravity(CENTER_HORIZONTAL|TOP);
-				padding(dip(4));
-
-				textView(() -> {
-					materialIcon("\ue893"); //Back
-					onClick((v) -> finish());
-				});
-
-				v(View.class, () -> {
-					size(WRAP, FILL);
-					weight(1);
-					gravity(CENTER_VERTICAL);
-				});
-
-				textView(() -> {
-					materialIcon("\ue796"); // Edit
-					visibility(mCurrentTask.isRunning());
-					onClick((v) -> {
-						mCurrentTask.pause();
-						post(() -> {
-							EditText editText = (EditText) findViewById(TASK_NAME_EDITTEXT_ID);
-							editText.requestFocus();
-							editText.setSelection(editText.getText().length());
-						});
-					});
-				});
-
-				textView(() -> {
-					materialIcon("\ue620"); // Remove
-					visibility(mCurrentTask.isFinished());
-					onClick((v) -> {
-						mCurrentTask.remove();
-						finish();
-					});
-				});
-			});
+			// action bar
+			if (App.state().isTaskRunning()) {
+				Style.actionBar(Style.ACTION_EDIT, this::onEdit);
+			} else if (App.state().isTaskFailed()) {
+				Style.actionBar(Style.ACTION_EDIT, this::onRenew);
+			} else if (App.state().isTaskFinished()) {
+				Style.actionBar(Style.ACTION_REMOVE, this::onRemove);
+			} else {
+				Style.actionBar(Style.ACTION_NONE, null);
+			}
 
 			frameLayout(() -> {
 				size(FILL, WRAP);
-				weight(1);
 
 				linearLayout(() -> {
 					orientation(LinearLayout.VERTICAL);
 					size(FILL, WRAP);
-					layoutGravity(CENTER_HORIZONTAL|BOTTOM);
+					gravity(CENTER_HORIZONTAL);
 
-					editText(() -> {
-						id(TASK_NAME_EDITTEXT_ID);
-						size(FILL, WRAP);
-						gravity(CENTER);
-						textColor(Color.WHITE);
-						textSize(sip(isPortrait() ? 42 : 36));
-						singleLine(true);
-						focusable(mCurrentTask.isNew() || mCurrentTask.isPaused());
-						focusableInTouchMode(mCurrentTask.isNew() || mCurrentTask.isPaused());
-						clickable(mCurrentTask.isNew() || mCurrentTask.isPaused());
-						cursorVisible(mCurrentTask.isNew() || mCurrentTask.isPaused());
-						backgroundDrawable(null);
-						typeface("RobotoCondensed-Light.ttf");
-						hint(R.string.task_name_hint);
-						text(mCurrentTask.getName());
-						onTextChanged(s -> {
-							mCurrentTask.setName(s.toString());
-						});
-						init(() -> {
-							((EditText) Anvil.currentView()).requestFocus();
-						});
-					});
+					Style.taskName(App.state().currentTask().name(),
+						(App.state().isTaskNew() || App.state().isTaskPaused()),
+						s -> App.dispatch(new CountdoneAction(CountdoneAction.Type.SET_NAME, s.toString())));
 
-					textView(() -> {
-						size(FILL, WRAP);
-						gravity(CENTER);
-						textColor(Color.WHITE);
-						textSize(sip(isPortrait() ? 67 : 42));
-						clickable(mCurrentTask.isNew() || mCurrentTask.isPaused());
-						onClick(mTimeClicked);
-						typeface("RobotoCondensed-Bold.ttf");
-						text(getCountDownText());
-					});
-				});
-			});
+					Style.taskDuration(countdownText(),
+						(App.state().isTaskNew() || App.state().isTaskPaused() ? this::onSetTime : null));
 
-			frameLayout(() -> {
-				size(FILL, WRAP);
-				layoutGravity(CENTER);
-				weight(1);
-
-				textView(() -> {
-					size(dip(StartView.BUTTON_SIZE), dip(StartView.BUTTON_SIZE));
-					layoutGravity(CENTER);
-					weight(1);
-					gravity(CENTER);
-					clickable(true);
-					backgroundResource(R.drawable.black_button);
-					textColor(Color.WHITE);
-					textSize(sip(24));
-					enabled(!mCurrentTask.isNew() || mTimeIsSet);
-					typeface("RobotoCondensed-Light.ttf");
-					onClick(mCurrentTask.isRunning() ? mDoneClicked :
-						(mCurrentTask.isFinished() ? mRestartClicked : mStartClicked));
-					text(mCurrentTask.isNew() || mCurrentTask.isPaused() ? 
-						R.string.start : (mCurrentTask.isFinished() ? R.string.again : R.string.done));
+					Style.taskButton(taskButtonText(), (!App.state().isTaskNew() || App.state().durationSet()), taskButtonListener());
 				});
 			});
 		});
 	}
 
-	public void onLoad(Bundle b) {
-		if (b.getBoolean("new")) {
-			mCurrentTask = mTasks.create(b.getString("newName"), b.getLong("newTime"));
-			mTimeIsSet = b.getBoolean("newTimeSet");
-			return;
-		}
-		if (b.getBoolean("current")) {
-			mCurrentTask = mTasks.getCurrent();
-			return;
-		}
-		boolean completed = b.getBoolean("completed");
-		int index =	b.getInt("index");
-		mCurrentTask = (completed ? mTasks.getCompleted() :
-				mTasks.getFailed()).get(index);
+	public void onEdit(View v) {
+		App.dispatch(new CountdoneAction(CountdoneAction.Type.PAUSE));
+		post(() -> {
+			EditText editText = (EditText) findViewById(Style.TASK_NAME_EDITTEXT_ID);
+			editText.requestFocus();
+			editText.setSelection(editText.getText().length());
+		});
 	}
 
-	public void onSave(Bundle b) {
-		if (mCurrentTask.isNew()) {
-			b.putBoolean("new", true);
-			b.putBoolean("newTimeSet", mTimeIsSet);
-			b.putString("newName", mCurrentTask.getName());
-			b.putLong("newTime", mCurrentTask.getDuration());
-		}
-		if (mCurrentTask != mTasks.getCurrent()) {
-			boolean completed = mTasks.getCompleted().contains(mCurrentTask);
-			b.putBoolean("current", false);
-			b.putBoolean("completed", completed);
-			b.putInt("index", (completed ? mTasks.getCompleted() :
-						mTasks.getFailed()).indexOf(mCurrentTask));
+	public void onRenew(View v) {
+		App.dispatch(new CountdoneAction(CountdoneAction.Type.NEW_TASK, null));
+	}
+
+	public void onRemove(View v) {
+		finish();
+		// TODO a task should have an id. Otherwise removing one of the two identical tasks
+		// (same values of task params) will remove both due to Immutables optimizations in
+		// keeping a single instance for multiple identical objects
+		App.dispatch(new CountdoneAction(CountdoneAction.Type.REMOVE_TASK));
+	}
+
+	public void onSetTime(View v) {
+		TimePickerDialog picker = new TimePickerDialog(v.getContext(),
+			TimePickerDialog.THEME_DEVICE_DEFAULT_LIGHT, (p, hour, minute) -> {
+				App.dispatch(new CountdoneAction(CountdoneAction.Type.SET_DURATION, (hour * 60 + minute ) * 60 * 1000L));
+			}, (int) App.state().currentTask().remainder()/60/60/1000,
+			(int) (App.state().currentTask().remainder()/60/1000)%60, true);
+		picker.setTitle(R.string.set_time_title);
+		picker.show();
+	}
+
+	private OnClickListener taskButtonListener() {
+		return v -> {
+			if (App.state().isTaskRunning() || App.state().isTaskFailed()) {
+				finish();
+				App.dispatch(new CountdoneAction(CountdoneAction.Type.STOP));
+			} else if (App.state().isTaskFinished()) {
+				String n = App.state().currentTask().name();
+				long d = App.state().currentTask().duration();
+				App.dispatch(new CountdoneAction(CountdoneAction.Type.NEW_TASK,
+					new Pair<String, Long>(n, d)));
+				App.dispatch(new CountdoneAction(CountdoneAction.Type.START));
+			} else {
+				App.dispatch(new CountdoneAction(CountdoneAction.Type.START));
+			}
+		};
+	}
+
+	private int taskButtonText() {
+		if (App.state().isTaskNew() || App.state().isTaskPaused()) {
+			return R.string.start;
+		} else if (App.state().isTaskFinished()) {
+			return R.string.again;
 		} else {
-			b.putBoolean("current", true);
+			return R.string.done;
 		}
+	}
+
+	private String countdownText() {
+		if (App.state().isTaskNew() && !App.state().durationSet()) {
+			return getContext().getString(R.string.set_time);
+		}
+		long t = (App.state().isTaskFinished() ?
+				App.state().currentTask().duration() :
+				App.state().getRemainder());
+		t = (t < 0 ? 0 : t);
+		return String.format("%02d:%02d:%02d",
+				t/1000/60/60,
+				(t/1000/60)%60,
+				(t/1000)%60);
+	}
+
+	private void finish() {
+		((MainActivity) getContext()).toStart();
 	}
 }
 

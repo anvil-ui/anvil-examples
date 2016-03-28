@@ -1,4 +1,4 @@
-package trikita.anvil.listenertest;
+package com.example.anvil.databinding;
 
 import android.content.Context;
 import android.widget.LinearLayout;

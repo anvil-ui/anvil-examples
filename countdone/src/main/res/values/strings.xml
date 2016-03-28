@@ -7,7 +7,6 @@
 	<string name="done">DONE</string>
 	<string name="start">START</string>
 	<string name="again">AGAIN</string>
-	<string name="failed">FAILED</string>
 
 	<string name="task_name_hint">Task name</string>
 	<string name="set_time">SET TIME</string>
